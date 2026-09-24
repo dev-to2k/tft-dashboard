@@ -1,0 +1,24 @@
+{
+  "name": "@tft/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@tft/types": "workspace:*",
+    "@tanstack/react-query": "^5.62.0"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/react": "^18.3.0"
+  }
+}

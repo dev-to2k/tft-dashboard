@@ -1,0 +1,50 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@tft/ui": [
+        "../../packages/ui/src"
+      ],
+      "@tft/types": [
+        "../../packages/types/src"
+      ],
+      "@tft/api": [
+        "../../packages/api/src"
+      ],
+      "@tft/store": [
+        "../../packages/store/src"
+      ],
+      "@tft/game-data": [
+        "../../packages/game-data/src"
+      ],
+      "@tft/utils": [
+        "../../packages/utils/src"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "incremental": true,
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}

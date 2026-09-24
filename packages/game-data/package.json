@@ -1,0 +1,22 @@
+{
+  "name": "@tft/game-data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "sync-ddragon": "tsx src/scripts/sync-ddragon.ts",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@tft/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@tft/shell",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "@tft/ui": "workspace:*",
+    "@tft/types": "workspace:*",
+    "@tft/api": "workspace:*",
+    "@tft/store": "workspace:*",
+    "@tft/game-data": "workspace:*",
+    "@tft/utils": "workspace:*",
+    "@tanstack/react-query": "^5.75.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.7.0",
+    "tailwindcss": "^4.1.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "postcss": "^8.5.0"
+  }
+}

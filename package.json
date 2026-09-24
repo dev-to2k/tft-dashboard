@@ -1,0 +1,19 @@
+{
+  "name": "tft-dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=22"
+  }
+}

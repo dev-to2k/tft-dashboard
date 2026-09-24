@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* TFT Dark Theme Variables */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1a2236;
+
+  --text-primary: #f0f0f0;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --accent-gold: #c8aa6e;
+  --accent-blue: #0ac8b9;
+  --accent-purple: #a855f7;
+  --accent-red: #ef4444;
+  --accent-green: #22c55e;
+
+  --border-primary: rgba(255, 255, 255, 0.1);
+  --border-accent: rgba(200, 170, 110, 0.3);
+
+  /* Cost colors */
+  --cost-1: #9ca3af;
+  --cost-2: #22c55e;
+  --cost-3: #3b82f6;
+  --cost-4: #a855f7;
+  --cost-5: #ffd700;
+
+  /* Tier colors */
+  --tier-s: #ffd700;
+  --tier-a: #3b82f6;
+  --tier-b: #22c55e;
+  --tier-c: #9ca3af;
+  --tier-d: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
