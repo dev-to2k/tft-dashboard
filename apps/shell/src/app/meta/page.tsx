@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { useMetaStats } from '@tft/api';
+import { usePreferencesStore } from '@tft/store';
 import { Button, LoadingSkeleton, TierBadge, tierTextClass } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
 
 export default function MetaOverviewPage() {
+  const eloBracket = usePreferencesStore((s) => s.eloBracket);
   const { champions, overview, isLoading, isError, error, refetch } =
-    useMetaStats();
+    useMetaStats({ eloBracket });
 
   const topChampions = champions.slice(0, 8);
   const patch = overview?.patchId ?? 'latest';
@@ -18,11 +20,11 @@ export default function MetaOverviewPage() {
         <h1 className="text-3xl font-black text-[var(--foreground)]">
           Meta Overview
         </h1>
-        <p className="mt-2 text-[var(--foreground)]/50">
+        <p className="mt-2 text-muted-foreground">
           Champion tier list and win rates for Patch {patch}
         </p>
         {overview ? (
-          <p className="mt-1 text-xs text-[var(--foreground)]/30">
+          <p className="mt-1 text-xs text-muted-foreground">
             Set {overview.setNumber} &mdash; {overview.setName} &middot;{' '}
             {overview.totalGames.toLocaleString('en-US')} matches analysed
           </p>
@@ -35,7 +37,7 @@ export default function MetaOverviewPage() {
             Couldn&rsquo;t load meta stats.
           </p>
           {error ? (
-            <p className="mt-1 text-xs text-[var(--foreground)]/40">
+            <p className="mt-1 text-xs text-muted-foreground">
               {error.message}
             </p>
           ) : null}
@@ -78,7 +80,7 @@ export default function MetaOverviewPage() {
                 <span className={`text-2xl font-black ${tierTextClass[tier]}`}>
                   {tier}
                 </span>
-                <p className="mt-1 text-xs text-[var(--foreground)]/40">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {count} champion{count !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -108,7 +110,7 @@ export default function MetaOverviewPage() {
           </div>
         ) : !isError ? (
           champions.length === 0 ? (
-            <p className="py-12 text-center text-sm text-[var(--foreground)]/30">
+            <p className="py-12 text-center text-sm text-muted-foreground">
               No champion data available yet.
             </p>
           ) : (
@@ -144,7 +146,7 @@ export default function MetaOverviewPage() {
                     </div>
                     <p className="mt-1 text-xs font-semibold text-[var(--accent-gold)]">
                       {champ.winRate.toFixed(1)}% WR
-                      <span className="ml-2 font-normal text-[var(--foreground)]/40">
+                      <span className="ml-2 font-normal text-muted-foreground">
                         {champ.avgPlacement.toFixed(2)} avg
                       </span>
                     </p>
@@ -158,3 +160,4 @@ export default function MetaOverviewPage() {
     </div>
   );
 }
+

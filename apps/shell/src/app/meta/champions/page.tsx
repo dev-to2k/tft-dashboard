@@ -1,12 +1,14 @@
 'use client';
 
 import { useMetaStats } from '@tft/api';
+import { usePreferencesStore } from '@tft/store';
 import { Button, LoadingSkeleton, TierBadge, costTextClass } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
 
 export default function ChampionsTierListPage() {
+  const eloBracket = usePreferencesStore((s) => s.eloBracket);
   const { champions, overview, isLoading, isError, error, refetch } =
-    useMetaStats();
+    useMetaStats({ eloBracket });
   const patch = overview?.patchId ?? 'latest';
 
   return (
@@ -15,7 +17,7 @@ export default function ChampionsTierListPage() {
         <h1 className="text-3xl font-black text-[var(--foreground)]">
           Champion Tier List
         </h1>
-        <p className="mt-2 text-[var(--foreground)]/50">
+        <p className="mt-2 text-muted-foreground">
           All champions sorted by average placement for Patch {patch}
         </p>
       </div>
@@ -26,7 +28,7 @@ export default function ChampionsTierListPage() {
             Couldn&rsquo;t load champion stats.
           </p>
           {error ? (
-            <p className="mt-1 text-xs text-[var(--foreground)]/40">
+            <p className="mt-1 text-xs text-muted-foreground">
               {error.message}
             </p>
           ) : null}
@@ -56,15 +58,18 @@ export default function ChampionsTierListPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">
+                  Champion tier list sorted by average placement
+                </caption>
                 <thead>
-                  <tr className="border-b border-[var(--border)] bg-[var(--background)] text-xs uppercase tracking-wider text-[var(--foreground)]/40">
-                    <th className="px-4 py-3 font-medium">Champion</th>
-                    <th className="px-4 py-3 font-medium">Cost</th>
-                    <th className="px-4 py-3 font-medium">Tier</th>
-                    <th className="px-4 py-3 font-medium text-right">Win Rate</th>
-                    <th className="px-4 py-3 font-medium text-right">Avg Place</th>
-                    <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">Pick Rate</th>
-                    <th className="hidden px-4 py-3 font-medium md:table-cell">Traits</th>
+                  <tr className="border-b border-[var(--border)] bg-[var(--background)] text-xs uppercase tracking-wider text-muted-foreground">
+                    <th scope="col" className="px-4 py-3 font-medium">Champion</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Cost</th>
+                    <th scope="col" className="px-4 py-3 font-medium">Tier</th>
+                    <th scope="col" className="px-4 py-3 font-medium text-right">Win Rate</th>
+                    <th scope="col" className="px-4 py-3 font-medium text-right">Avg Place</th>
+                    <th scope="col" className="hidden px-4 py-3 font-medium text-right sm:table-cell">Pick Rate</th>
+                    <th scope="col" className="hidden px-4 py-3 font-medium md:table-cell">Traits</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -108,10 +113,10 @@ export default function ChampionsTierListPage() {
                           {champ.winRate.toFixed(1)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-[var(--foreground)]/70">
+                      <td className="px-4 py-3 text-right text-muted-foreground">
                         {champ.avgPlacement.toFixed(2)}
                       </td>
-                      <td className="hidden px-4 py-3 text-right text-[var(--foreground)]/70 sm:table-cell">
+                      <td className="hidden px-4 py-3 text-right text-muted-foreground sm:table-cell">
                         {champ.pickRate.toFixed(1)}%
                       </td>
                       <td className="hidden px-4 py-3 md:table-cell">
@@ -131,7 +136,7 @@ export default function ChampionsTierListPage() {
                 </tbody>
               </table>
               {champions.length === 0 ? (
-                <p className="py-12 text-center text-sm text-[var(--foreground)]/30">
+                <p className="py-12 text-center text-sm text-muted-foreground">
                   No champion data available yet.
                 </p>
               ) : null}
@@ -142,3 +147,4 @@ export default function ChampionsTierListPage() {
     </div>
   );
 }
+

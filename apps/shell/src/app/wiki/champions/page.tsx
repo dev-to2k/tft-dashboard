@@ -29,7 +29,7 @@ function WikiChampionsContent() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-black text-[var(--foreground)]">Champions</h2>
-        <p className="mt-1 text-sm text-[var(--foreground)]/50">
+        <p className="mt-1 text-sm text-muted-foreground">
           {isLoading ? (
             <span className="block h-4 w-64 animate-pulse rounded bg-white/10" />
           ) : (
@@ -48,9 +48,9 @@ function WikiChampionsContent() {
 
       {!isLoading && isError && (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
-          <p className="text-sm text-[var(--foreground)]/70">Failed to load champions.</p>
+          <p className="text-sm text-muted-foreground">Failed to load champions.</p>
           {error && (
-            <p className="mt-1 text-xs text-[var(--foreground)]/40">{error.message}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
           )}
           <Button
             variant="primary"
@@ -81,7 +81,7 @@ function WikiChampionsContent() {
                 className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                   costFilter === null
                     ? 'bg-[var(--accent-gold)] text-[var(--background)]'
-                    : 'border border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]/60 hover:text-[var(--foreground)]'
+                    : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
                 }`}
               >
                 All
@@ -94,7 +94,7 @@ function WikiChampionsContent() {
                   className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
                     costFilter === cost
                       ? `text-white ${costBgClass[cost] ?? ''}`
-                      : 'border border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]/60 hover:text-[var(--foreground)]'
+                      : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
                   }`}
                 >
                   {cost}
@@ -121,7 +121,7 @@ function WikiChampionsContent() {
                   {champ.name}
                 </h3>
                 {champ.ability.name && (
-                  <p className="mt-0.5 text-center text-[10px] text-[var(--foreground)]/40">
+                  <p className="mt-0.5 text-center text-[10px] text-muted-foreground">
                     {champ.ability.name}
                   </p>
                 )}
@@ -145,7 +145,7 @@ function WikiChampionsContent() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="py-12 text-center text-[var(--foreground)]/30">
+            <div className="py-12 text-center text-muted-foreground">
               No champions match your filters.
             </div>
           )}
@@ -170,3 +170,4 @@ export default function WikiChampionsPage() {
     </Suspense>
   );
 }
+

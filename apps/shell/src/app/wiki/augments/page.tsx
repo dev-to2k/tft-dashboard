@@ -140,7 +140,7 @@ export default function WikiAugmentsPage() {
             ))}
           </div>
           {filtered.length === 0 && (
-            <div className="py-12 text-center text-[var(--foreground)]/30">
+            <div className="py-12 text-center text-muted-foreground">
               No augments match your filters.
             </div>
           )}
@@ -149,3 +149,4 @@ export default function WikiAugmentsPage() {
     </div>
   );
 }
+

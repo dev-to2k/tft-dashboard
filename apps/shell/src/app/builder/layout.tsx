@@ -18,7 +18,7 @@ export default function BuilderLayout({
           <h1 className="text-2xl font-black text-[var(--foreground)]">
             Team Builder
           </h1>
-          <p className="mt-1 text-sm text-[var(--foreground)]/50">
+          <p className="mt-1 text-sm text-muted-foreground">
             Plan your team composition and explore synergies.
           </p>
         </div>
@@ -27,3 +27,4 @@ export default function BuilderLayout({
     </div>
   );
 }
+

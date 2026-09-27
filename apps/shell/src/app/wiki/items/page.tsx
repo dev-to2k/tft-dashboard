@@ -96,7 +96,7 @@ export default function WikiItemsPage() {
             ))}
           </div>
           {filtered.length === 0 && (
-            <div className="py-12 text-center text-[var(--foreground)]/30">
+            <div className="py-12 text-center text-muted-foreground">
               No items match your search.
             </div>
           )}
@@ -105,3 +105,4 @@ export default function WikiItemsPage() {
     </div>
   );
 }
+

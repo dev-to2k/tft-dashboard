@@ -53,7 +53,7 @@ export function TrendingComps() {
   if (isError) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5">
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-muted-foreground">
           Could not load trending comps.
         </p>
         <Button
@@ -73,7 +73,7 @@ export function TrendingComps() {
   if (topComps.length === 0) {
     return (
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5">
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-muted-foreground">
           No comps available right now.
         </p>
       </div>
@@ -101,7 +101,7 @@ export function TrendingComps() {
                   <h3 className="text-lg font-bold text-[var(--foreground)]">
                     {comp.name}
                   </h3>
-                  <span className="rounded-full bg-[var(--background)] px-2 py-0.5 text-[10px] font-medium text-[var(--foreground)]/60">
+                  <span className="rounded-full bg-[var(--background)] px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                     {comp.style}
                   </span>
                 </div>
@@ -115,7 +115,7 @@ export function TrendingComps() {
                     </span>
                   ))}
                   {extraTraits > 0 && (
-                    <span className="rounded-full bg-[var(--background)] px-2 py-0.5 text-xs text-[var(--foreground)]/50">
+                    <span className="rounded-full bg-[var(--background)] px-2 py-0.5 text-xs text-muted-foreground">
                       +{extraTraits}
                     </span>
                   )}
@@ -126,19 +126,19 @@ export function TrendingComps() {
 
             <div className="mt-4 flex gap-5">
               <div>
-                <p className="text-xs text-[var(--foreground)]/50">Win Rate</p>
+                <p className="text-xs text-muted-foreground">Win Rate</p>
                 <p className="text-sm font-semibold text-[var(--accent-gold)]">
                   {comp.winRate.toFixed(1)}%
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[var(--foreground)]/50">Avg Place</p>
+                <p className="text-xs text-muted-foreground">Avg Place</p>
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   {comp.avgPlacement.toFixed(2)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[var(--foreground)]/50">Top 4</p>
+                <p className="text-xs text-muted-foreground">Top 4</p>
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   {comp.top4Rate.toFixed(1)}%
                 </p>
@@ -162,3 +162,4 @@ export function TrendingComps() {
     </div>
   );
 }
+

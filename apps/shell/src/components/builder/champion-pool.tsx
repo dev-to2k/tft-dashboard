@@ -58,7 +58,7 @@ export function ChampionPool() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--foreground)]/50">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
         Champion Pool
       </h3>
       <div className="space-y-3">
@@ -71,7 +71,7 @@ export function ChampionPool() {
               >
                 {cost}
               </span>
-              <span className="text-xs text-[var(--foreground)]/40">
+              <span className="text-xs text-muted-foreground">
                 {cost}-cost
               </span>
             </div>
@@ -89,7 +89,7 @@ export function ChampionPool() {
                   >
                     {champ.name.slice(0, 2)}
                   </div>
-                  <span className="truncate text-[10px] font-medium text-[var(--foreground)]/70 group-hover:text-[var(--foreground)]">
+                  <span className="truncate text-[10px] font-medium text-muted-foreground group-hover:text-[var(--foreground)]">
                     {champ.name}
                   </span>
                 </button>
@@ -101,3 +101,4 @@ export function ChampionPool() {
     </div>
   );
 }
+

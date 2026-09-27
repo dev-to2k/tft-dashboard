@@ -68,7 +68,7 @@ export function TeamBoard() {
         {/* Level & Gold Controls */}
         <div className="flex flex-wrap items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-[var(--foreground)]/50">Level</span>
+            <span className="text-sm font-medium text-muted-foreground">Level</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setLevel(level - 1)}
@@ -93,7 +93,7 @@ export function TeamBoard() {
           <div className="h-6 w-px bg-[var(--border)]" />
 
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-[var(--foreground)]/50">Gold</span>
+            <span className="text-sm font-medium text-muted-foreground">Gold</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setGold(gold - 10)}
@@ -125,7 +125,7 @@ export function TeamBoard() {
 
         {/* Board Slots (8 slots in hex-like grid) */}
         <div>
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--foreground)]/50">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
             Board ({board.filter(Boolean).length}/{level > 9 ? 10 : level + 1} max)
           </h3>
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
@@ -165,7 +165,7 @@ export function TeamBoard() {
                       </button>
                     </>
                   ) : (
-                    <span className="text-xs text-[var(--foreground)]/20">
+                    <span className="text-xs text-muted-foreground">
                       Slot {index + 1}
                     </span>
                   )}
@@ -177,7 +177,7 @@ export function TeamBoard() {
 
         {/* Bench Slots (9 slots) */}
         <div>
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--foreground)]/50">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
             Bench
           </h3>
           <div className="grid grid-cols-9 gap-1.5">
@@ -197,7 +197,7 @@ export function TeamBoard() {
                       {champ.name.slice(0, 2)}
                     </div>
                   ) : (
-                    <span className="text-[9px] text-[var(--foreground)]/15">
+                    <span className="text-[9px] text-muted-foreground">
                       {index + 1}
                     </span>
                   )}
@@ -210,7 +210,7 @@ export function TeamBoard() {
         {/* Active Traits */}
         {sortedTraits.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--foreground)]/50">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Active Traits
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -239,3 +239,4 @@ export function TeamBoard() {
     </div>
   );
 }
+

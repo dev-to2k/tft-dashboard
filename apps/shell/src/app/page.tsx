@@ -2,6 +2,36 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { QuickStats } from '@/components/dashboard/quick-stats';
 import { TrendingComps } from '@/components/dashboard/trending-comps';
+import { Hero } from '@/components/dashboard/hero';
+
+function ChartIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="20" x2="12" y2="10" />
+      <line x1="18" y1="20" x2="18" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="16" />
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
 
 export const metadata: Metadata = {
   title: 'TFT Dashboard — Track the Meta, Browse the Wiki, Build Teams',
@@ -14,22 +44,22 @@ const quickLinks = [
     title: 'Meta Tracker',
     description: 'Tier lists, win rates, and comp rankings for the current patch.',
     href: '/meta',
-    icon: '📊',
-    color: 'var(--accent-gold)',
+    icon: <ChartIcon />,
+    iconClass: 'bg-[var(--accent-gold)]/10 text-[var(--accent-gold-text)]',
   },
   {
     title: 'Champion Wiki',
     description: 'Browse champions, traits, items, and augments with full details.',
     href: '/wiki',
-    icon: '📖',
-    color: 'var(--accent-blue)',
+    icon: <BookIcon />,
+    iconClass: 'bg-[var(--accent-blue)]/10 text-[var(--accent-blue-text)]',
   },
   {
     title: 'Team Builder',
     description: 'Plan your team composition with an interactive board builder.',
     href: '/builder',
-    icon: '🎯',
-    color: 'var(--cost-4)',
+    icon: <TargetIcon />,
+    iconClass: 'bg-cost-4/10 text-cost-4',
   },
 ];
 
@@ -37,21 +67,7 @@ export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-gradient-to-br from-[var(--card-bg)] to-[var(--background)] p-8 lg:p-12">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--accent-gold)_0%,_transparent_50%)] opacity-[0.07]" />
-        <div className="relative">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--accent-gold)]">
-            Set 18 &mdash; Enchanted Wilds
-          </p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-[var(--foreground)] lg:text-5xl">
-            TFT Dashboard
-          </h1>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-[var(--foreground)]/60">
-            Your all-in-one Teamfight Tactics companion. Track the meta, explore
-            champions and traits, and build winning compositions.
-          </p>
-        </div>
-      </section>
+      <Hero />
 
       {/* Quick Stats */}
       <section>
@@ -86,14 +102,15 @@ export default function HomePage() {
               href={link.href}
               className="group rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-all hover:border-[var(--accent-gold)]/40 hover:shadow-lg hover:shadow-[var(--accent-gold)]/5"
             >
-              <span className="text-3xl">{link.icon}</span>
-              <h3
-                className="mt-3 text-lg font-bold"
-                style={{ color: link.color }}
+              <span
+                className={`flex h-12 w-12 items-center justify-center rounded-xl ${link.iconClass}`}
               >
+                {link.icon}
+              </span>
+              <h3 className="mt-3 text-lg font-bold text-[var(--foreground)]">
                 {link.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--foreground)]/50">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {link.description}
               </p>
             </Link>

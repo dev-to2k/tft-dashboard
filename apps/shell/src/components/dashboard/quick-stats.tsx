@@ -25,7 +25,7 @@ export function QuickStats() {
   if (isError) {
     return (
       <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5">
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-muted-foreground">
           Could not load stats.
         </p>
         <button
@@ -78,7 +78,7 @@ export function QuickStats() {
           key={stat.label}
           className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5 transition-all hover:border-[var(--accent-gold)]/40"
         >
-          <p className="text-sm font-medium text-[var(--foreground)]/60">
+          <p className="text-sm font-medium text-muted-foreground">
             {stat.label}
           </p>
           <p
@@ -87,7 +87,7 @@ export function QuickStats() {
           >
             {stat.value}
           </p>
-          <p className="mt-1 text-xs text-[var(--foreground)]/40">
+          <p className="mt-1 text-xs text-muted-foreground">
             {stat.subtext}
           </p>
         </div>
@@ -95,3 +95,4 @@ export function QuickStats() {
     </div>
   );
 }
+

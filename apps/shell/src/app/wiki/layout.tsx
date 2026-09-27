@@ -18,7 +18,7 @@ export default function WikiLayout({
         <h1 className="text-2xl font-black text-[var(--foreground)]">
           TFT Wiki
         </h1>
-        <p className="mt-1 text-sm text-[var(--foreground)]/50">
+        <p className="mt-1 text-sm text-muted-foreground">
           Set 18 - Enchanted Wilds &mdash; Complete reference for champions, traits, items, and augments.
         </p>
       </div>
@@ -27,3 +27,4 @@ export default function WikiLayout({
     </div>
   );
 }
+
