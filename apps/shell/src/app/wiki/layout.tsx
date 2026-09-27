@@ -1,3 +1,11 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'TFT Wiki — TFT Dashboard',
+  description:
+    'Complete TFT reference for champions, traits, items, and augments in the current set.',
+};
+
 export default function WikiLayout({
   children,
 }: {

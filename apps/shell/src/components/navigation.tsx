@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { MobileMenu } from './mobile-menu';
 import { ThemeToggle } from './theme-toggle';
 import { navLinks, isActivePath } from './nav-links';
+import { PatchBadge } from './patch-badge';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -44,7 +45,7 @@ export function Navigation() {
         <div className="mt-auto flex items-end gap-2 pt-8">
           <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-center">
             <p className="text-xs text-muted-foreground">Current Patch</p>
-            <p className="text-sm font-bold text-[var(--accent-gold)]">15.8</p>
+            <PatchBadge />
           </div>
           <ThemeToggle />
         </div>

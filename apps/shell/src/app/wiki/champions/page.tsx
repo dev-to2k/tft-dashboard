@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { useChampions, useStaticData } from '@tft/api';
 import { Button, LoadingSkeleton, SearchInput, costBgClass, costBorderClass } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
 
-export default function WikiChampionsPage() {
-  const [search, setSearch] = useState('');
+function WikiChampionsContent() {
+  const params = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
   const [costFilter, setCostFilter] = useState<number | null>(null);
 
   const { isLoading, isError, error, refetch, data } = useChampions();
@@ -150,5 +152,21 @@ export default function WikiChampionsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function WikiChampionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {Array.from({ length: 10 }, (_, i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+      }
+    >
+      <WikiChampionsContent />
+    </Suspense>
   );
 }

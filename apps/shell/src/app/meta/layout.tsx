@@ -1,3 +1,11 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Meta Overview — TFT Dashboard',
+  description:
+    'Live TFT meta tier lists, champion win rates, and top compositions for the current patch.',
+};
+
 export default function MetaLayout({
   children,
 }: {

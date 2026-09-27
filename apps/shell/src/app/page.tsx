@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { QuickStats } from '@/components/dashboard/quick-stats';
 import { TrendingComps } from '@/components/dashboard/trending-comps';
+
+export const metadata: Metadata = {
+  title: 'TFT Dashboard — Track the Meta, Browse the Wiki, Build Teams',
+  description:
+    'Live Teamfight Tactics meta stats, champion wiki, and an interactive team builder for the current patch.',
+};
 
 const quickLinks = [
   {

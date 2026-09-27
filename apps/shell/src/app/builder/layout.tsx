@@ -1,3 +1,11 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Team Builder — TFT Dashboard',
+  description:
+    'Plan your TFT team composition with an interactive board builder and live trait synergies.',
+};
+
 export default function BuilderLayout({
   children,
 }: {

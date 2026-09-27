@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { navLinks, isActivePath } from './nav-links';
+import { PatchBadge } from './patch-badge';
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
@@ -78,7 +79,7 @@ export function MobileMenu() {
             <div className="mt-auto pt-8">
               <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-center">
                 <p className="text-xs text-muted-foreground">Patch</p>
-                <p className="text-sm font-bold text-[var(--accent-gold)]">15.8</p>
+                <PatchBadge />
               </div>
             </div>
           </div>
