@@ -34,6 +34,7 @@
     "moduleResolution": "bundler",
     "jsx": "preserve",
     "incremental": true,
+    "composite": false,
     "noEmit": true,
     "allowJs": true
   },

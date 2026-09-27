@@ -1,21 +1,9 @@
-const championsData = [
-  { name: 'Lux', cost: 4, tier: 'S', winRate: 54.2, avgPlace: 3.1, pickRate: 38.5, traits: ['Sorcerer', 'Arcane'] },
-  { name: 'Garen', cost: 3, tier: 'S', winRate: 53.8, avgPlace: 3.2, pickRate: 42.1, traits: ['Bruiser', 'Ironclad'] },
-  { name: 'Akali', cost: 4, tier: 'S', winRate: 53.1, avgPlace: 3.3, pickRate: 35.7, traits: ['Assassin', 'Phantom'] },
-  { name: 'Ashe', cost: 2, tier: 'A', winRate: 51.9, avgPlace: 3.5, pickRate: 44.2, traits: ['Sniper', 'Celestial'] },
-  { name: 'Syndra', cost: 3, tier: 'A', winRate: 51.4, avgPlace: 3.6, pickRate: 31.8, traits: ['Sorcerer', 'Sentinel'] },
-  { name: 'Darius', cost: 3, tier: 'A', winRate: 50.8, avgPlace: 3.7, pickRate: 36.4, traits: ['Bruiser', 'Demolitionist'] },
-  { name: 'Sett', cost: 3, tier: 'A', winRate: 50.5, avgPlace: 3.8, pickRate: 29.3, traits: ['Bruiser', 'Shadow'] },
-  { name: 'Jinx', cost: 4, tier: 'B', winRate: 49.5, avgPlace: 4.0, pickRate: 28.1, traits: ['Sniper', 'Shadow'] },
-  { name: 'Vex', cost: 1, tier: 'B', winRate: 49.1, avgPlace: 4.1, pickRate: 52.3, traits: ['Enchanter', 'Arcane'] },
-  { name: 'Katarina', cost: 3, tier: 'B', winRate: 48.7, avgPlace: 4.2, pickRate: 25.6, traits: ['Assassin', 'Demolitionist'] },
-  { name: 'Mordekaiser', cost: 5, tier: 'B', winRate: 48.3, avgPlace: 4.3, pickRate: 18.9, traits: ['Ironclad', 'Shadow'] },
-  { name: 'Zyra', cost: 2, tier: 'C', winRate: 47.2, avgPlace: 4.5, pickRate: 22.4, traits: ['Sorcerer', 'Enchanter'] },
-  { name: 'Shaco', cost: 2, tier: 'C', winRate: 46.8, avgPlace: 4.6, pickRate: 19.7, traits: ['Assassin', 'Phantom'] },
-  { name: 'Lulu', cost: 1, tier: 'C', winRate: 46.1, avgPlace: 4.7, pickRate: 33.5, traits: ['Enchanter', 'Celestial'] },
-  { name: 'Talon', cost: 2, tier: 'D', winRate: 44.5, avgPlace: 5.1, pickRate: 14.2, traits: ['Assassin', 'Ironclad'] },
-  { name: 'Ornn', cost: 4, tier: 'D', winRate: 43.9, avgPlace: 5.3, pickRate: 12.8, traits: ['Bruiser', 'Celestial'] },
-];
+'use client';
+
+import { useState } from 'react';
+import { useMetaStats } from '@tft/api';
+import { LoadingSkeleton } from '@tft/ui';
+import type { ChampionMetaStats } from '@tft/types';
 
 const tierColors: Record<string, string> = {
   S: 'var(--tier-s)',
@@ -33,7 +21,35 @@ const costColors: Record<number, string> = {
   5: 'var(--cost-5)',
 };
 
+function ChampionIcon({ champ }: { champ: ChampionMetaStats }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = champ.iconUrl !== '' && !imgFailed;
+
+  return (
+    <div
+      className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-bold text-white"
+      style={{ backgroundColor: costColors[champ.cost] ?? 'var(--accent-blue)' }}
+    >
+      {showImage ? (
+        <img
+          src={champ.iconUrl}
+          alt={champ.name}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+        />
+      ) : (
+        champ.name.slice(0, 2)
+      )}
+    </div>
+  );
+}
+
 export default function ChampionsTierListPage() {
+  const { champions, overview, isLoading, isError, error, refetch } =
+    useMetaStats();
+  const patch = overview?.patchId ?? 'latest';
+
   return (
     <div className="space-y-6">
       <div>
@@ -41,97 +57,132 @@ export default function ChampionsTierListPage() {
           Champion Tier List
         </h1>
         <p className="mt-2 text-[var(--foreground)]/50">
-          All champions sorted by win rate for Patch 15.8
+          All champions sorted by average placement for Patch {patch}
         </p>
       </div>
 
-      {/* Data Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--background)] text-xs uppercase tracking-wider text-[var(--foreground)]/40">
-                <th className="px-4 py-3 font-medium">Champion</th>
-                <th className="px-4 py-3 font-medium">Cost</th>
-                <th className="px-4 py-3 font-medium">Tier</th>
-                <th className="px-4 py-3 font-medium text-right">Win Rate</th>
-                <th className="px-4 py-3 font-medium text-right">Avg Place</th>
-                <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">Pick Rate</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">Traits</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {championsData.map((champ) => (
-                <tr
-                  key={champ.name}
-                  className="transition-colors hover:bg-[var(--background)]/50"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white"
-                        style={{ backgroundColor: costColors[champ.cost] }}
-                      >
-                        {champ.name.slice(0, 2)}
-                      </div>
-                      <span className="font-semibold text-[var(--foreground)]">
-                        {champ.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="font-medium"
-                      style={{ color: costColors[champ.cost] }}
-                    >
-                      {champ.cost}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-flex h-6 w-6 items-center justify-center rounded text-xs font-black"
-                      style={{
-                        backgroundColor: `${tierColors[champ.tier]}20`,
-                        color: tierColors[champ.tier],
-                      }}
-                    >
-                      {champ.tier}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span
-                      className="font-semibold"
-                      style={{
-                        color: champ.winRate >= 50 ? 'var(--accent-gold)' : 'var(--foreground)/70',
-                      }}
-                    >
-                      {champ.winRate}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right text-[var(--foreground)]/70">
-                    {champ.avgPlace}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right text-[var(--foreground)]/70 sm:table-cell">
-                    {champ.pickRate}%
-                  </td>
-                  <td className="hidden px-4 py-3 md:table-cell">
-                    <div className="flex flex-wrap gap-1">
-                      {champ.traits.map((trait) => (
-                        <span
-                          key={trait}
-                          className="rounded-full bg-[var(--background)] px-2 py-0.5 text-[10px] text-[var(--accent-blue)]"
-                        >
-                          {trait}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {isError ? (
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
+          <p className="font-semibold text-[var(--foreground)]">
+            Couldn&rsquo;t load champion stats.
+          </p>
+          {error ? (
+            <p className="mt-1 text-xs text-[var(--foreground)]/40">
+              {error.message}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              void refetch();
+            }}
+            className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-[var(--accent-gold)]/40 hover:text-[var(--accent-gold)]"
+          >
+            Retry
+          </button>
         </div>
-      </div>
+      ) : null}
+
+      {/* Data Table */}
+      {!isError ? (
+        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)]">
+          {isLoading ? (
+            <div>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <LoadingSkeleton key={i} variant="table-row" />
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] bg-[var(--background)] text-xs uppercase tracking-wider text-[var(--foreground)]/40">
+                    <th className="px-4 py-3 font-medium">Champion</th>
+                    <th className="px-4 py-3 font-medium">Cost</th>
+                    <th className="px-4 py-3 font-medium">Tier</th>
+                    <th className="px-4 py-3 font-medium text-right">Win Rate</th>
+                    <th className="px-4 py-3 font-medium text-right">Avg Place</th>
+                    <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">Pick Rate</th>
+                    <th className="hidden px-4 py-3 font-medium md:table-cell">Traits</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {champions.map((champ) => (
+                    <tr
+                      key={champ.championId}
+                      className="transition-colors hover:bg-[var(--background)]/50"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <ChampionIcon champ={champ} />
+                          <span className="font-semibold text-[var(--foreground)]">
+                            {champ.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="font-medium"
+                          style={{ color: costColors[champ.cost] }}
+                        >
+                          {champ.cost}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="inline-flex h-6 w-6 items-center justify-center rounded text-xs font-black"
+                          style={{
+                            backgroundColor: `${tierColors[champ.tier]}20`,
+                            color: tierColors[champ.tier],
+                          }}
+                        >
+                          {champ.tier}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span
+                          className="font-semibold"
+                          style={{
+                            color:
+                              champ.winRate >= 50
+                                ? 'var(--accent-gold)'
+                                : 'var(--foreground)',
+                          }}
+                        >
+                          {champ.winRate.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-[var(--foreground)]/70">
+                        {champ.avgPlacement.toFixed(2)}
+                      </td>
+                      <td className="hidden px-4 py-3 text-right text-[var(--foreground)]/70 sm:table-cell">
+                        {champ.pickRate.toFixed(1)}%
+                      </td>
+                      <td className="hidden px-4 py-3 md:table-cell">
+                        <div className="flex flex-wrap gap-1">
+                          {champ.traits.map((trait) => (
+                            <span
+                              key={trait}
+                              className="rounded-full bg-[var(--background)] px-2 py-0.5 text-[10px] text-[var(--accent-blue)]"
+                            >
+                              {trait}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {champions.length === 0 ? (
+                <p className="py-12 text-center text-sm text-[var(--foreground)]/30">
+                  No champion data available yet.
+                </p>
+              ) : null}
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,16 +1,23 @@
 // Client
 export { tftFetch, type FetchOptions } from './client';
 
-// Community Dragon
+// Community Dragon (static game data — free, no API key)
 export {
-  fetchCommunityDragonData,
+  COMMUNITY_DRAGON_DATA_URL,
+  fetchStaticData,
   fetchChampions,
   fetchTraits,
   fetchItems,
   fetchAugments,
+  toCdragonUrl,
+  slugify,
+  type TftStaticData,
 } from './community-dragon';
 
+// MetaTFT (live statistics — free, no API key)
+export { fetchMetaStats, normalizeId, type MetaStatsPayload } from './metatft';
+
 // Hooks
-export { useChampions } from './hooks/use-champions';
-export { useMetaStats } from './hooks/use-meta-stats';
+export { useChampions, useStaticData, STATIC_DATA_URL } from './hooks/use-champions';
+export { useMetaStats, META_STATS_URL, type UseMetaStatsParams } from './hooks/use-meta-stats';
 export { useSearch } from './hooks/use-search';

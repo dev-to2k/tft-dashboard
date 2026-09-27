@@ -1,41 +1,43 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import type { ChampionMetaStats, CompMetaStats, ApiResponse } from '@tft/types';
-import { tftFetch } from '../client';
+import type { MetaStatsPayload } from '../metatft';
 
-interface UseMetaStatsParams {
+export const META_STATS_URL = '/api/tft/meta';
+
+export interface UseMetaStatsParams {
   eloBracket?: string;
   patchId?: string;
+  enabled?: boolean;
 }
 
+/**
+ * Live champion/comp statistics (win rate, top 4, average placement, pick rate)
+ * served by `apps/shell/src/app/api/tft/meta/route.ts`.
+ */
 export function useMetaStats(params: UseMetaStatsParams = {}) {
-  const { eloBracket = 'all', patchId = 'latest' } = params;
+  const { eloBracket = 'all', patchId = 'latest', enabled = true } = params;
 
-  const championsQuery = useQuery({
-    queryKey: ['tft', 'meta', 'champions', eloBracket, patchId],
-    queryFn: () =>
-      tftFetch<ChampionMetaStats[]>(
-        `/api/meta/champions?elo=${eloBracket}&patch=${patchId}`,
-      ),
+  const query = useQuery<MetaStatsPayload, Error>({
+    queryKey: ['tft', 'meta', eloBracket, patchId],
+    queryFn: async () => {
+      const response = await fetch(META_STATS_URL, { headers: { Accept: 'application/json' } });
+      if (!response.ok) {
+        throw new Error(`Failed to load meta stats: HTTP ${response.status}`);
+      }
+      return (await response.json()) as MetaStatsPayload;
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
-  });
-
-  const compsQuery = useQuery({
-    queryKey: ['tft', 'meta', 'comps', eloBracket, patchId],
-    queryFn: () =>
-      tftFetch<CompMetaStats[]>(
-        `/api/meta/comps?elo=${eloBracket}&patch=${patchId}`,
-      ),
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 30,
+    enabled,
   });
 
   return {
-    champions: championsQuery,
-    comps: compsQuery,
-    isLoading: championsQuery.isLoading || compsQuery.isLoading,
-    isError: championsQuery.isError || compsQuery.isError,
+    ...query,
+    champions: query.data?.champions ?? [],
+    comps: query.data?.comps ?? [],
+    overview: query.data?.overview,
+    isLoading: query.isLoading,
+    isError: query.isError,
   };
 }
