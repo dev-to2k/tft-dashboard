@@ -4,7 +4,7 @@ import * as React from 'react';
 import { cn } from '../lib/utils';
 
 const tierStyles: Record<string, string> = {
-  S: 'border-tier-s/40 bg-tier-s/10 text-tier-s',
+  S: 'border-tier-s/40 bg-tier-s/10 text-tier-s animate-gold-shimmer',
   A: 'border-tier-a/40 bg-tier-a/10 text-tier-a',
   B: 'border-tier-b/40 bg-tier-b/10 text-tier-b',
   C: 'border-tier-c/40 bg-tier-c/10 text-tier-c',
