@@ -7,7 +7,7 @@ import { useMetaStats, useStaticData } from '@tft/api';
 import type { TftChampion } from '@tft/types';
 import { useTeamBuilderStore } from '@tft/store';
 import { Button, TierBadge, costTextClass, tierVar } from '@tft/ui';
-import { fixed, intText, safeImageSrc, safeNumber, toArray } from '@tft/utils';
+import { fixed, intText, safeImageSrc, safeNumber } from '@tft/utils';
 import { ChampionAvatar } from '@/components/champion-avatar';
 import { useTryComp } from '@/hooks/use-try-comp';
 import { useDictionary } from '@/i18n/use-dictionary';
@@ -76,13 +76,15 @@ export default function ChampionDetailPage() {
   // Upstream static payload is runtime-shaped data, so read every field
   // defensively — a missing `stats`/`traits` block used to throw mid-render.
   const baseStats: Partial<TftChampion['stats']> = champion.stats ?? {};
+  // Off-allowlist splash/icon URLs collapse to '' -> gradient / initials.
+  const splash = safeImageSrc(champion.splashUrl);
   const stats: { label: string; value: string }[] = [
-    { label: dict.wiki.statHp, value: Number(baseStats.hp ?? 0).toLocaleString(numberLocale) },
-    { label: dict.wiki.statArmor, value: String(baseStats.armor ?? 0) },
-    { label: dict.wiki.statMr, value: String(baseStats.magicResist ?? 0) },
-    { label: dict.wiki.statAd, value: String(baseStats.attackDamage ?? 0) },
-    { label: dict.wiki.statAs, value: String(baseStats.attackSpeed ?? 0) },
-    { label: dict.wiki.statRange, value: String(baseStats.range ?? 0) },
+    { label: dict.wiki.statHp, value: intText(baseStats.hp, numberLocale) },
+    { label: dict.wiki.statArmor, value: String(safeNumber(baseStats.armor)) },
+    { label: dict.wiki.statMr, value: String(safeNumber(baseStats.magicResist)) },
+    { label: dict.wiki.statAd, value: String(safeNumber(baseStats.attackDamage)) },
+    { label: dict.wiki.statAs, value: String(safeNumber(baseStats.attackSpeed)) },
+    { label: dict.wiki.statRange, value: String(safeNumber(baseStats.range)) },
   ];
 
   return (
@@ -112,7 +114,7 @@ export default function ChampionDetailPage() {
         <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center lg:p-10">
           <ChampionAvatar
             name={champion.name}
-            iconUrl={champion.iconUrl}
+            iconUrl={safeImageSrc(champion.iconUrl)}
             cost={champion.cost}
             size="lg"
             className="h-20 w-20 rounded-2xl text-xl shadow-lg"
@@ -141,13 +143,13 @@ export default function ChampionDetailPage() {
             {meta && !isMetaLoading ? (
               <div className="mt-3 flex flex-wrap gap-4 text-sm">
                 <span className="font-black text-[var(--accent-gold)]">
-                  {meta.winRate.toFixed(1)}% WR
+                  {fixed(meta.winRate, 1)}% WR
                 </span>
                 <span className="text-muted-foreground">
-                  {meta.avgPlacement.toFixed(2)} avg
+                  {fixed(meta.avgPlacement, 2)} avg
                 </span>
                 <span className="text-muted-foreground">
-                  {meta.pickRate.toFixed(1)}% pick
+                  {fixed(meta.pickRate, 1)}% pick
                 </span>
               </div>
             ) : null}
@@ -220,7 +222,7 @@ export default function ChampionDetailPage() {
                 <span
                   aria-hidden="true"
                   className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: `linear-gradient(90deg, transparent, ${tierVar[comp.tier]}, transparent)` }}
+                  style={{ background: `linear-gradient(90deg, transparent, ${tierVar[comp.tier] ?? 'var(--tier-b)'}, transparent)` }}
                 />
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate font-bold text-[var(--foreground)]">{comp.name}</p>
@@ -228,7 +230,7 @@ export default function ChampionDetailPage() {
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-xs font-bold text-[var(--accent-gold)]">
-                    {comp.winRate.toFixed(1)}% WR
+                    {fixed(comp.winRate, 1)}% WR
                   </p>
                   <Button type="button" variant="outline" size="sm" onClick={() => tryCompInBuilder(comp)}>
                     {dict.meta.tryInBuilder}
@@ -255,7 +257,7 @@ export default function ChampionDetailPage() {
               >
                 <ChampionAvatar
                   name={champ.name}
-                  iconUrl={champ.iconUrl}
+                  iconUrl={safeImageSrc(champ.iconUrl)}
                   cost={champ.cost}
                   size="md"
                   className="mx-auto rounded-full"
