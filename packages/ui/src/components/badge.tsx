@@ -4,7 +4,7 @@ import * as React from 'react';
 import { cn } from '../lib/utils';
 
 const tierColors: Record<string, string> = {
-  S: 'border-tier-s/40 bg-tier-s/10 text-tier-s',
+  S: 'border-tier-s/50 bg-gradient-to-b from-tier-s/25 to-tier-s/10 text-tier-s font-display shadow-[0_0_16px_-4px_var(--tier-s)]',
   A: 'border-tier-a/40 bg-tier-a/10 text-tier-a',
   B: 'border-tier-b/40 bg-tier-b/10 text-tier-b',
   C: 'border-tier-c/40 bg-tier-c/10 text-tier-c',
@@ -23,7 +23,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-[0_0_12px_-4px_currentColor] transition-colors',
+          'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold font-display tabular-nums shadow-[0_0_12px_-4px_currentColor] transition-colors',
           tierClass,
           className,
         )}

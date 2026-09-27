@@ -6,26 +6,32 @@
 :root {
   color-scheme: dark;
 
-  /* TFT Dark Theme (default) — zinc-based neutrals */
-  --background: #09090b; /* zinc-950 */
+  /* TFT Neon Foundation — dark arcade background (Nebula Arena) */
+  --background: #0b0b16;
   --foreground: #f4f4f5; /* zinc-100 */
   --muted-foreground: #a1a1aa; /* zinc-400 */
 
-  /* Accent Colors */
-  --accent-gold: #c8aa6e;
-  --accent-gold-text: #c8aa6e;
+  /* Neon accent tokens */
+  --neon-gold: #f0c75e;
+  --neon-purple: #a855f7;
+  --neon-cyan: #0ac8b9;
+  --glow: 0 0 24px rgba(240, 199, 94, 0.22), 0 0 64px rgba(168, 85, 247, 0.16);
+
+  /* Accent Colors (neon-aligned, legacy names kept) */
+  --accent-gold: #f0c75e;
+  --accent-gold-text: #f0c75e;
   --gold-deep: #8a6d2f;
   --accent-blue: #0ac8b9;
   --accent-blue-text: #0ac8b9;
   /* Text on gold/blue brand surfaces (both themes) */
   --gold-foreground: #18181b; /* zinc-900 */
 
-  /* Card & Surface */
-  --card-bg: #18181b; /* zinc-900 */
+  /* Card & Surface (neon) */
+  --card-bg: #12121f;
   --border: #27272a; /* zinc-800 */
 
   /* Focus ring + status */
-  --ring: #c8aa6e;
+  --ring: #f0c75e;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -86,6 +92,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
+  --color-neon-gold: var(--neon-gold);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-cyan: var(--neon-cyan);
   --color-accent-gold: var(--accent-gold);
   --color-accent-gold-text: var(--accent-gold-text);
   --color-gold-deep: var(--gold-deep);
@@ -114,15 +123,138 @@
   box-sizing: border-box;
 }
 
+/* Nebula Arena — static deep-space base (no grid, no animation, no blur) */
 body {
-  background-color: var(--background);
+  background-color: #0b0b16;
+  background-image:
+    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(168, 85, 247, 0.18), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 85% 5%, rgba(10, 200, 185, 0.1), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 50% 110%, rgba(240, 199, 94, 0.1), transparent 70%);
   color: var(--foreground);
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body, 'Be Vietnam Pro'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling — gaming gold */
+/* Nebula depth: center purple haze (7%) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 50% 35% at 50% 45%, rgba(168, 85, 247, 0.07), transparent 70%);
+}
+
+/* Nebula vignette: edge darkening (50%) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse 120% 90% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+main,
+header,
+footer {
+  position: relative;
+  z-index: 2;
+}
+
+.font-display,
+h1, h2, h3, .display {
+  font-family: var(--font-display, 'Chakra Petch'), var(--font-body, 'Be Vietnam Pro'), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Neon foundation utilities */
+.glass {
+  background: rgba(18, 18, 31, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glow-border {
+  position: relative;
+  border: 1px solid rgba(240, 199, 94, 0.38);
+  box-shadow: var(--glow);
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: glow-breathe 3.2s ease-in-out infinite;
+}
+
+.card-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 30%, rgba(240, 199, 94, 0.16) 50%, transparent 70%);
+  animation: shimmer-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.page-enter {
+  animation: page-in 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.divider-glow {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--neon-gold) 30%, var(--neon-purple) 50%, var(--neon-cyan) 70%, transparent);
+  opacity: 0.7;
+}
+
+/* Neon keyframes — transform/opacity only (GPU-friendly) */
+@keyframes neon-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.72; transform: scale(1.03); }
+}
+
+@keyframes shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.animate-neon-pulse {
+  animation: neon-pulse 2.2s ease-in-out infinite;
+}
+
+/* Scrollbar styling — neon purple/gold */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -133,13 +265,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--accent-gold), var(--gold-deep));
+  background: linear-gradient(180deg, var(--neon-purple), var(--neon-gold));
   border-radius: 8px;
   border: 2px solid var(--background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-gold);
+  background: linear-gradient(180deg, var(--neon-gold), var(--neon-purple));
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-purple) var(--background);
 }
 
 /* Skeleton sheen sweep */
@@ -194,7 +331,15 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-gold-shimmer {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .animate-gold-shimmer,
+  .animate-neon-pulse {
     animation: none;
   }
   .skeleton-sheen::after {
@@ -205,8 +350,16 @@ body {
   .animate-ping,
   .animate-bounce,
   .reveal,
-  .slide-enter {
-    animation: none;
+  .slide-enter,
+  .spot-overlay-enter,
+  .spot-panel-enter,
+  .spot-hex-enter,
+  .shimmer::after,
+  .glow-border::before,
+  .page-enter,
+  .card-lift {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -215,8 +368,168 @@ body {
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
+/* Drop-target gold glow (filter only: no layout, no blur backdrop) */
+.hex-drop-glow {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent-gold) 65%, transparent))
+    drop-shadow(0 0 2px var(--accent-gold));
+}
+
+/* Comp spotlight: overlay opacity only + panel scale 0.96->1 / translateY 8->0, 200ms */
+@keyframes spot-overlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spot-panel {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes spot-hex {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.spot-overlay-enter {
+  animation: spot-overlay 200ms ease-out both;
+}
+
+.spot-panel-enter {
+  animation: spot-panel 200ms ease-out both;
+}
+
+.spot-hex-enter {
+  animation: spot-hex 180ms ease-out both;
+}
+
+/* Wiki grids: skip offscreen rendering work */
+.wiki-grid {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
 /* Consistent keyboard focus indicator across interactive elements */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* === P0: container + responsive utilities (isolated — no body background touch) === */
+:root {
+  --hero-title: clamp(2.5rem, 1.6rem + 4.5vw, 4.5rem);
+  --hero-pad: clamp(2rem, 1.25rem + 3.5vw, 4rem);
+  --container-max: 80rem; /* max-w-7xl */
+}
+
+.app-container,
+.container-app {
+  width: 100%;
+  margin-inline: auto;
+  max-width: var(--container-max);
+  padding-inline: 1rem; /* px-4 */
+}
+
+@media (min-width: 640px) {
+  .app-container,
+  .container-app {
+    padding-inline: 1.5rem; /* sm:px-6 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container,
+  .container-app {
+    padding-inline: 2rem; /* lg:px-8 */
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-container,
+  .container-app {
+    padding-inline: 2.5rem; /* xl:px-10 */
+  }
+}
+
+/* Responsive card grid: 1col -> sm:2 -> lg:3 (transform/opacity only on children) */
+.grid-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
+@media (min-width: 640px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Horizontal scroll wrapper for data tables (P0: min 720px) */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.table-scroll > table,
+.table-scroll table {
+  min-width: 720px;
+  width: 100%;
+}
+
+/* Builder board keeps its own horizontal scroll floor (P0: min 620px) */
+.board-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+}
+
+.board-scroll > * {
+  min-width: 620px;
+}
+
+/* Fluid hero title driven by --hero-title (no layout-animating props) */
+.hero-title {
+  font-size: var(--hero-title);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Below-the-fold sections: skip rendering until near viewport */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/* === Trending carousel + hex board containment (isolated — no Nebula touch) === */
+.grid-cols-15 {
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.trending-carousel {
+  scroll-padding-inline: 0.25rem;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.champ-carousel {
+  scroll-padding-inline: 0.25rem;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+/* Card cuối không bị cắt sát mép (giữ glow/hover lift) */
+.trending-carousel > :last-child,
+.champ-carousel > :last-child {
+  margin-right: 0.25rem;
 }

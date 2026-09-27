@@ -82,7 +82,8 @@ export function UnitHex({
 
   return (
     <div
-      className="group relative"
+      className={`group relative isolate ${highlighted ? 'hex-drop-glow' : ''}`}
+      data-drop-target={highlighted ? 'true' : undefined}
       onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
       onDragOver={onDragOver}
@@ -92,7 +93,7 @@ export function UnitHex({
         role={onDrop ? 'button' : undefined}
         aria-label={dropLabel}
         tabIndex={-1}
-        className={`hex-clip aspect-[6/7] w-full p-[3px] transition-transform ${highlighted ? 'scale-105' : ''} ${dimmed ? 'opacity-40' : ''} ${outerTone}`}
+        className={`hex-clip aspect-[6/7] w-full p-[3px] transition-transform duration-150 ease-out will-change-transform motion-reduce:transition-none motion-reduce:transform-none ${highlighted ? 'scale-[1.01]' : ''} ${dimmed ? 'opacity-40' : ''} ${outerTone}`}
       >
         <div
           draggable={draggable}

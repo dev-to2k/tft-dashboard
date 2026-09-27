@@ -5,7 +5,8 @@ import { useMounted } from '@/hooks/use-mounted';
 
 export function PatchBadge() {
   const { overview, isLoading } = useMetaStats();
-  const showLoading = !useMounted() || isLoading || !overview;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading || !overview;
 
   return (
     <p className="text-sm font-bold text-[var(--accent-gold)]">

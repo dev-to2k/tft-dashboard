@@ -9,6 +9,35 @@ const CDN_ORIGIN = 'https://raw.communitydragon.org/latest';
 export const COMMUNITY_DRAGON_DATA_URL = `${CDN_ORIGIN}/cdragon/tft/en_us.json`;
 
 // ---------------------------------------------------------------------------
+// Upstream fetch with a short timeout + one retry.
+// Community Dragon occasionally stalls (large TFT dump); fail fast and retry
+// once instead of hanging the page on a cold fetch.
+// ---------------------------------------------------------------------------
+
+const FETCH_TIMEOUT_MS = 8000;
+const FETCH_RETRIES = 1;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(input: string, init?: RequestInit): Promise<Response> {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt <= FETCH_RETRIES; attempt++) {
+    try {
+      return await fetch(input, {
+        ...init,
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < FETCH_RETRIES) await sleep(400 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}
+
+// ---------------------------------------------------------------------------
 // Raw Community Dragon shapes (only the fields we actually consume)
 // ---------------------------------------------------------------------------
 
@@ -68,13 +97,45 @@ interface RawCommunityDragon {
 }
 
 // ---------------------------------------------------------------------------
+// Upstream-shape guards
+//
+// The dump is a 30MB untyped JSON blob; fields go missing between patches.
+// These keep a single bad entry from throwing during the join and taking the
+// whole page down with a 500.
+// ---------------------------------------------------------------------------
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function asText(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert a Community Dragon asset path (`.../foo.tex`) into a hot-linkable png URL. */
+/**
+ * Convert a Community Dragon asset path (`.../foo.tex`) into a hot-linkable
+ * png URL. Anything that is not a CDN-relative asset path returns `''` so the
+ * UI falls back to initials/gradients instead of handing `next/image` a host
+ * that is not on the `images.remotePatterns` allowlist.
+ */
 export function toCdragonUrl(path?: string | null): string {
-  if (!path || path === 'None') return '';
-  const clean = path.toLowerCase().replace(/\.tex$/, '.png').replace(/^\//, '');
+  if (typeof path !== 'string') return '';
+  const raw = path.trim();
+  if (raw === '' || raw === 'None') return '';
+  // Absolute URLs are only kept when they already point at the CDN origin.
+  if (/^https?:\/\//i.test(raw)) {
+    return raw.startsWith(`${CDN_ORIGIN}/`) ? raw : '';
+  }
+  const clean = raw.toLowerCase().replace(/\.tex$/, '.png').replace(/^\//, '');
+  if (clean === '' || clean === 'none') return '';
   if (clean.startsWith('lol/')) {
     return `${CDN_ORIGIN}/game/${clean.slice(4)}`;
   }
@@ -114,12 +175,17 @@ function toPlayableChampions(set: RawSetData): RawChampion[] {
   const skip = /Dummy|Voidspawn|PracticeTarget/i;
   const byBaseName = new Map<string, RawChampion>();
 
-  for (const champion of set.champions ?? []) {
-    if (!champion?.apiName || skip.test(champion.apiName)) continue;
-    if (!Number.isFinite(champion.cost) || champion.cost < 1 || champion.cost > 5) continue;
-    if (!Array.isArray(champion.traits) || champion.traits.length === 0) continue;
+  for (const champion of asArray<RawChampion>(set?.champions)) {
+    if (!champion || typeof champion.apiName !== 'string' || skip.test(champion.apiName)) continue;
+    if (typeof champion.name !== 'string' || champion.name.trim() === '') continue;
+    const cost = asNumber(champion.cost, 0);
+    if (cost < 1 || cost > 5) continue;
+    if (asArray<unknown>(champion.traits).length === 0) continue;
+    champion.cost = cost;
+    if (!Array.isArray(champion.traits)) champion.traits = [];
 
     const baseName = champion.name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    if (baseName === '') continue;
     const existing = byBaseName.get(baseName);
     if (!existing) {
       byBaseName.set(baseName, champion);
@@ -152,7 +218,7 @@ function inferAugmentTier(name: string): 'silver' | 'gold' | 'prismatic' {
 // ---------------------------------------------------------------------------
 
 function mapChampion(champion: RawChampion, setName: string): TftChampion {
-  const stats = champion.stats ?? {};
+  const stats = (champion.stats ?? {}) as RawStats;
   const ability = champion.ability ?? {};
   const baseName = champion.name.replace(/\s*\([^)]*\)\s*$/, '').trim();
 
@@ -160,24 +226,24 @@ function mapChampion(champion: RawChampion, setName: string): TftChampion {
     id: champion.apiName,
     slug: slugify(baseName),
     name: baseName,
-    cost: champion.cost as 1 | 2 | 3 | 4 | 5,
-    traits: champion.traits,
+    cost: asNumber(champion.cost, 1) as 1 | 2 | 3 | 4 | 5,
+    traits: asArray<string>(champion.traits).filter((trait) => typeof trait === 'string'),
     ability: {
       name: cleanText(ability.name),
       description: cleanText(ability.desc),
       iconUrl: toCdragonUrl(ability.icon),
       mana: {
-        start: stats.initialMana ?? 0,
-        max: stats.mana ?? 0,
+        start: asNumber(stats?.initialMana, 0),
+        max: asNumber(stats?.mana, 0),
       },
     },
     stats: {
-      hp: stats.hp ?? 0,
-      armor: stats.armor ?? 0,
-      magicResist: stats.magicResist ?? 0,
-      attackDamage: stats.damage ?? 0,
-      attackSpeed: Math.round((stats.attackSpeed ?? 0) * 100) / 100,
-      range: stats.range ?? 0,
+      hp: asNumber(stats?.hp, 0),
+      armor: asNumber(stats?.armor, 0),
+      magicResist: asNumber(stats?.magicResist, 0),
+      attackDamage: asNumber(stats?.damage, 0),
+      attackSpeed: Math.round(asNumber(stats?.attackSpeed, 0) * 100) / 100,
+      range: asNumber(stats?.range, 0),
     },
     iconUrl: toCdragonUrl(champion.squareIcon ?? champion.tileIcon ?? champion.icon),
     splashUrl: toCdragonUrl(champion.icon),
@@ -192,8 +258,8 @@ function mapTrait(trait: RawTrait): TftTrait {
     name: trait.name,
     description: truncate(cleanText(trait.desc), 400),
     iconUrl: toCdragonUrl(trait.icon),
-    tiers: (trait.effects ?? []).map((effect, index) => ({
-      count: effect.minUnits ?? 0,
+    tiers: asArray<{ minUnits?: number }>(trait.effects).map((effect, index) => ({
+      count: asNumber(effect?.minUnits, 0),
       effect: '',
       style: toTraitStyle(index),
     })),
@@ -201,7 +267,7 @@ function mapTrait(trait: RawTrait): TftTrait {
 }
 
 function mapItem(item: RawItem): TftItem {
-  const from = Array.isArray(item.from) ? item.from : [];
+  const from = asArray<string>(item.from).filter((entry): entry is string => typeof entry === 'string');
   return {
     id: item.apiName,
     slug: slugify(item.name ?? item.apiName),
@@ -252,7 +318,7 @@ export function fetchStaticData(locale: GameLocale = 'en'): Promise<TftStaticDat
 }
 
 async function loadStaticData(locale: GameLocale): Promise<TftStaticData> {
-  const response = await fetch(COMMUNITY_DRAGON_DATA_URL, {
+  const response = await fetchWithRetry(COMMUNITY_DRAGON_DATA_URL, {
     headers: { 'User-Agent': 'tft-dashboard' },
   });
 
@@ -261,27 +327,33 @@ async function loadStaticData(locale: GameLocale): Promise<TftStaticData> {
   }
 
   const raw = (await response.json()) as RawCommunityDragon;
-  const sets = (raw.setData ?? []).filter(
-    (set) => Array.isArray(set.champions) && set.champions.length > 0,
+  const sets = asArray<RawSetData>(raw?.setData).filter(
+    (set) => set && asArray<unknown>(set.champions).length > 0,
   );
   if (sets.length === 0) {
     throw new Error('Community Dragon data contained no sets');
   }
 
   // The current set is the highest numbered one (setData order is arbitrary).
-  const set = sets.reduce((a, b) => (b.number > a.number ? b : a));
-  const itemsByName = new Map((raw.items ?? []).map((item) => [item.apiName, item]));
+  const set = sets.reduce((a, b) => (asNumber(b.number) > asNumber(a.number) ? b : a));
+  const itemsByName = new Map(
+    asArray<RawItem>(raw?.items)
+      .filter((item) => item && typeof item.apiName === 'string')
+      .map((item) => [item.apiName, item]),
+  );
 
-  const setName = `Set ${set.number}`;
+  const setName = `Set ${asNumber(set.number)}`;
   const champions = toPlayableChampions(set).map((champion) => mapChampion(champion, setName));
-  const traits = (set.traits ?? []).map(mapTrait);
+  const traits = asArray<RawTrait>(set.traits)
+    .filter((trait) => trait && typeof trait.apiName === 'string' && typeof trait.name === 'string')
+    .map(mapTrait);
 
-  const items = (set.items ?? [])
+  const items = asArray<string>(set.items)
     .map((apiName) => itemsByName.get(apiName))
     .filter((item): item is RawItem => Boolean(item) && item!.isAugment !== true)
     .map(mapItem);
 
-  const augments = (set.augments ?? [])
+  const augments = asArray<string>(set.augments)
     .map((apiName) => itemsByName.get(apiName))
     .filter((item): item is RawItem => Boolean(item) && item!.isAugment !== false)
     .map(mapAugment);
@@ -305,7 +377,7 @@ async function loadStaticData(locale: GameLocale): Promise<TftStaticData> {
   }
 
   return {
-    set: { id: set.mutator, number: set.number, name: setName },
+    set: { id: asText(set.mutator, 'tft'), number: asNumber(set.number), name: setName },
     champions,
     traits,
     items,

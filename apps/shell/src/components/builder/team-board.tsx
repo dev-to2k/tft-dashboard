@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, memo, useCallback, useMemo, useState } from 'react';
 import { useStaticData } from '@tft/api';
 import { BENCH_SLOTS, BOARD_SLOTS, useTeamBuilderStore } from '@tft/store';
 import { ChampionPool } from './champion-pool';
@@ -49,6 +49,129 @@ const legacyChampions: Record<string, LookupEntry> = {
 const EMPTY_BOARD: (string | null)[] = Array(BOARD_SLOTS).fill(null);
 const EMPTY_BENCH: (string | null)[] = Array(BENCH_SLOTS).fill(null);
 
+interface BoardSlotProps {
+  index: number;
+  entry: (HexEntry & { traits: string[] }) | null;
+  slotLabel: string;
+  dimmed: boolean;
+  highlighted: boolean;
+  removeLabel?: string;
+  onRemoveCell: (index: number) => void;
+  onDragStartCell: (index: number, event: React.DragEvent) => void;
+  onDragEndCell: () => void;
+  onDragOverCell: (index: number, event: React.DragEvent) => void;
+  onDragEnterCell: (index: number, event: React.DragEvent) => void;
+  onDragLeaveCell: () => void;
+  onDropCell: (index: number, event: React.DragEvent) => void;
+  onDoubleClickCell: (index: number) => void;
+}
+
+// Memoized so drop-target highlight only re-renders the old + new target
+// cells instead of all 28 board cells on every dragover.
+const BoardSlot = memo(function BoardSlot({
+  index,
+  entry,
+  slotLabel,
+  dimmed,
+  highlighted,
+  removeLabel,
+  onRemoveCell,
+  onDragStartCell,
+  onDragEndCell,
+  onDragOverCell,
+  onDragEnterCell,
+  onDragLeaveCell,
+  onDropCell,
+  onDoubleClickCell,
+}: BoardSlotProps) {
+  const { col, row } = boardGridPosition(index);
+  return (
+    <div
+      className="col-span-2 min-h-0 min-w-0"
+      style={{
+        gridColumnStart: col,
+        gridRowStart: row,
+        marginTop: row > 1 ? '-28%' : undefined,
+      }}
+    >
+      <UnitHex
+        entry={entry}
+        emptyLabel={slotLabel}
+        size="board"
+        draggable={Boolean(entry)}
+        dimmed={dimmed}
+        highlighted={highlighted}
+        dropLabel={slotLabel}
+        removeLabel={removeLabel}
+        onRemove={entry ? () => onRemoveCell(index) : undefined}
+        onDragStart={entry ? (event) => onDragStartCell(index, event) : undefined}
+        onDragEnd={onDragEndCell}
+        onDragOver={(event) => onDragOverCell(index, event)}
+        onDragEnter={(event) => onDragEnterCell(index, event)}
+        onDragLeave={onDragLeaveCell}
+        onDrop={(event) => onDropCell(index, event)}
+        onDoubleClick={entry ? () => onDoubleClickCell(index) : undefined}
+      />
+    </div>
+  );
+});
+
+interface BenchSlotProps {
+  index: number;
+  entry: (HexEntry & { traits: string[] }) | null;
+  dimmed: boolean;
+  highlighted: boolean;
+  benchLabel: string;
+  removeLabel?: string;
+  onRemoveCell: (index: number) => void;
+  onDragStartCell: (index: number, event: React.DragEvent) => void;
+  onDragEndCell: () => void;
+  onDragOverCell: (index: number, event: React.DragEvent) => void;
+  onDragEnterCell: (index: number, event: React.DragEvent) => void;
+  onDragLeaveCell: () => void;
+  onDropCell: (index: number, event: React.DragEvent) => void;
+  onDoubleClickCell: (index: number) => void;
+}
+
+// Same memoization for the 9 bench cells.
+const BenchSlot = memo(function BenchSlot({
+  index,
+  entry,
+  dimmed,
+  highlighted,
+  benchLabel,
+  removeLabel,
+  onRemoveCell,
+  onDragStartCell,
+  onDragEndCell,
+  onDragOverCell,
+  onDragEnterCell,
+  onDragLeaveCell,
+  onDropCell,
+  onDoubleClickCell,
+}: BenchSlotProps) {
+  return (
+    <UnitHex
+      entry={entry}
+      emptyLabel={`${index + 1}`}
+      size="bench"
+      draggable={Boolean(entry)}
+      dimmed={dimmed}
+      highlighted={highlighted}
+      dropLabel={benchLabel}
+      removeLabel={removeLabel}
+      onRemove={entry ? () => onRemoveCell(index) : undefined}
+      onDragStart={entry ? (event) => onDragStartCell(index, event) : undefined}
+      onDragEnd={onDragEndCell}
+      onDragOver={(event) => onDragOverCell(index, event)}
+      onDragEnter={(event) => onDragEnterCell(index, event)}
+      onDragLeave={onDragLeaveCell}
+      onDrop={(event) => onDropCell(index, event)}
+      onDoubleClick={entry ? () => onDoubleClickCell(index) : undefined}
+    />
+  );
+});
+
 export function TeamBoard() {
   const storedBoard = useTeamBuilderStore((s) => s.board);
   const storedBench = useTeamBuilderStore((s) => s.bench);
@@ -95,11 +218,21 @@ export function TeamBoard() {
     return map;
   }, [data]);
 
-  const resolve = (id: string | null): (HexEntry & { traits: string[] }) | null => {
-    if (!id) return null;
-    const entry = lookup.get(id);
-    return entry ? { ...entry, id, traits: entry.traits } : { name: id, cost: 1, traits: [], iconUrl: '', id };
-  };
+  const resolve = useCallback(
+    (id: string | null): (HexEntry & { traits: string[] }) | null => {
+      if (!id) return null;
+      const found = lookup.get(id);
+      return found
+        ? { ...found, id, traits: found.traits }
+        : { name: id, cost: 1, traits: [], iconUrl: '', id };
+    },
+    [lookup],
+  );
+
+  // Stable per-slot references so memoized cells only re-render when their
+  // own slot content or highlight state changes (not on every dragover).
+  const resolvedBoard = useMemo(() => board.map((id) => resolve(id)), [board, resolve]);
+  const resolvedBench = useMemo(() => bench.map((id) => resolve(id)), [bench, resolve]);
 
   // Calculate active traits
   const activeTraits = new Map<string, number>();
@@ -128,43 +261,85 @@ export function TeamBoard() {
     reset();
   };
 
-  const clearDragState = () => {
+  const clearDragState = useCallback(() => {
     setDragging(null);
     setDropTarget(null);
-  };
+  }, []);
 
-  const handleDragOverCell = (area: 'board' | 'bench', index: number) => (event: React.DragEvent) => {
+  const handleDragOverBoard = useCallback((index: number, event: React.DragEvent) => {
     if (!hasUnitPayload(event)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     setDropTarget((current) =>
-      current?.area === area && current.index === index ? current : { area, index },
+      current?.area === 'board' && current.index === index ? current : { area: 'board', index },
     );
-  };
+  }, []);
 
-  const handleDropOnBoard = (index: number) => (event: React.DragEvent) => {
+  const handleDragOverBench = useCallback((index: number, event: React.DragEvent) => {
+    if (!hasUnitPayload(event)) return;
     event.preventDefault();
-    const payload = getDragPayload(event);
-    clearDragState();
-    if (!payload) return;
-    if (payload.kind === 'pool') {
-      if (!board[index]) placeOnBoard(index, payload.championId);
-    } else {
-      moveUnit({ area: payload.kind, index: payload.index }, { area: 'board', index });
-    }
-  };
+    event.dataTransfer.dropEffect = 'move';
+    setDropTarget((current) =>
+      current?.area === 'bench' && current.index === index ? current : { area: 'bench', index },
+    );
+  }, []);
 
-  const handleDropOnBench = (index: number) => (event: React.DragEvent) => {
-    event.preventDefault();
-    const payload = getDragPayload(event);
-    clearDragState();
-    if (!payload) return;
-    if (payload.kind === 'pool') {
-      if (!bench[index]) placeOnBench(index, payload.championId);
-    } else {
-      moveUnit({ area: payload.kind, index: payload.index }, { area: 'bench', index });
-    }
-  };
+  const handleDragLeaveCell = useCallback(() => setDropTarget(null), []);
+
+  const handleDragStartBoard = useCallback(
+    (index: number, event: React.DragEvent) => {
+      if (!board[index]) return;
+      setDragPayload(event, { kind: 'board', index });
+      setDragging({ kind: 'board', index });
+    },
+    [board],
+  );
+
+  const handleDragStartBench = useCallback(
+    (index: number, event: React.DragEvent) => {
+      if (!bench[index]) return;
+      setDragPayload(event, { kind: 'bench', index });
+      setDragging({ kind: 'bench', index });
+    },
+    [bench],
+  );
+
+  const handleDropOnBoard = useCallback(
+    (index: number, event: React.DragEvent) => {
+      event.preventDefault();
+      const payload = getDragPayload(event);
+      setDragging(null);
+      setDropTarget(null);
+      if (!payload) return;
+      if (payload.kind === 'pool') {
+        if (!board[index]) placeOnBoard(index, payload.championId);
+      } else {
+        moveUnit({ area: payload.kind, index: payload.index }, { area: 'board', index });
+      }
+    },
+    [board, moveUnit, placeOnBoard],
+  );
+
+  const handleDropOnBench = useCallback(
+    (index: number, event: React.DragEvent) => {
+      event.preventDefault();
+      const payload = getDragPayload(event);
+      setDragging(null);
+      setDropTarget(null);
+      if (!payload) return;
+      if (payload.kind === 'pool') {
+        if (!bench[index]) placeOnBench(index, payload.championId);
+      } else {
+        moveUnit({ area: payload.kind, index: payload.index }, { area: 'bench', index });
+      }
+    },
+    [bench, moveUnit, placeOnBench],
+  );
+
+  const handleRemoveBoard = useCallback((index: number) => removeChampion(index), [removeChampion]);
+  const handleRemoveBench = useCallback((index: number) => removeBenched(index), [removeBenched]);
+  const handleBoardToBench = useCallback((index: number) => moveBoardToBench(index), [moveBoardToBench]);
+  const handleBenchToBoard = useCallback((index: number) => moveBenchToBoard(index), [moveBenchToBoard]);
 
   const isDragSource = (area: 'board' | 'bench', index: number) =>
     dragging !== null && dragging.kind === area && dragging.index === index;
@@ -194,48 +369,27 @@ export function TeamBoard() {
           <p className="mb-3 hidden text-xs text-muted-foreground md:block">
             {t.dndHint}
           </p>
-          <div className="overflow-x-auto pb-2">
+          <div className="board-scroll overflow-x-auto pb-2">
           <div className="grid min-w-[620px] grid-cols-15 gap-1 sm:gap-1.5">
-            {board.map((slotId, index) => {
-              const champ = resolve(slotId);
-              const { col, row } = boardGridPosition(index);
-              return (
-                <div
-                  key={`board-${index}`}
-                  className="col-span-2"
-                  style={{
-                    gridColumnStart: col,
-                    gridRowStart: row,
-                    // Nest pointy-top rows (honeycomb): % margins on grid items
-                    // resolve against the grid-area width, so this scales responsively.
-                    marginTop: row > 1 ? '-28%' : undefined,
-                  }}
-                >
-                  <UnitHex
-                    entry={champ}
-                    emptyLabel={t.slot(index + 1)}
-                    size="board"
-                    draggable={Boolean(champ)}
-                    dimmed={isDragSource('board', index)}
-                    highlighted={isDropTarget('board', index)}
-                    dropLabel={t.slot(index + 1)}
-                    removeLabel={champ ? t.removeFromBoard(champ.name) : undefined}
-                    onRemove={champ ? () => removeChampion(index) : undefined}
-                    onDragStart={(event) => {
-                      if (!champ) return;
-                      setDragPayload(event, { kind: 'board', index });
-                      setDragging({ kind: 'board', index });
-                    }}
-                    onDragEnd={clearDragState}
-                    onDragOver={handleDragOverCell('board', index)}
-                    onDragEnter={handleDragOverCell('board', index)}
-                    onDragLeave={() => setDropTarget(null)}
-                    onDrop={handleDropOnBoard(index)}
-                    onDoubleClick={champ ? () => moveBoardToBench(index) : undefined}
-                  />
-                </div>
-              );
-            })}
+            {resolvedBoard.map((champ, index) => (
+              <BoardSlot
+                key={`board-${index}`}
+                index={index}
+                entry={champ}
+                slotLabel={t.slot(index + 1)}
+                dimmed={isDragSource('board', index)}
+                highlighted={isDropTarget('board', index)}
+                removeLabel={champ ? t.removeFromBoard(champ.name) : undefined}
+                onRemoveCell={handleRemoveBoard}
+                onDragStartCell={handleDragStartBoard}
+                onDragEndCell={clearDragState}
+                onDragOverCell={handleDragOverBoard}
+                onDragEnterCell={handleDragOverBoard}
+                onDragLeaveCell={handleDragLeaveCell}
+                onDropCell={handleDropOnBoard}
+                onDoubleClickCell={handleBoardToBench}
+              />
+            ))}
           </div>
           </div>
         </div>
@@ -245,35 +399,28 @@ export function TeamBoard() {
           <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
             {t.bench}
           </h3>
-          <div className="grid grid-cols-9 gap-1 sm:gap-1.5">
-            {bench.map((slotId, index) => {
-              const champ = resolve(slotId);
-              return (
-                <UnitHex
-                  key={`bench-${index}`}
-                  entry={champ}
-                  emptyLabel={`${index + 1}`}
-                  size="bench"
-                  draggable={Boolean(champ)}
-                  dimmed={isDragSource('bench', index)}
-                  highlighted={isDropTarget('bench', index)}
-                  dropLabel={`${t.bench} ${index + 1}`}
-                  removeLabel={champ ? t.removeFromBench(champ.name) : undefined}
-                  onRemove={champ ? () => removeBenched(index) : undefined}
-                  onDragStart={(event) => {
-                    if (!champ) return;
-                    setDragPayload(event, { kind: 'bench', index });
-                    setDragging({ kind: 'bench', index });
-                  }}
-                  onDragEnd={clearDragState}
-                  onDragOver={handleDragOverCell('bench', index)}
-                  onDragEnter={handleDragOverCell('bench', index)}
-                  onDragLeave={() => setDropTarget(null)}
-                  onDrop={handleDropOnBench(index)}
-                  onDoubleClick={champ ? () => moveBenchToBoard(index) : undefined}
-                />
-              );
-            })}
+          <div className="board-scroll overflow-x-auto pb-2">
+            <div className="grid min-w-[560px] grid-cols-9 gap-1 sm:gap-1.5">
+            {resolvedBench.map((champ, index) => (
+              <BenchSlot
+                key={`bench-${index}`}
+                index={index}
+                entry={champ}
+                dimmed={isDragSource('bench', index)}
+                highlighted={isDropTarget('bench', index)}
+                benchLabel={`${t.bench} ${index + 1}`}
+                removeLabel={champ ? t.removeFromBench(champ.name) : undefined}
+                onRemoveCell={handleRemoveBench}
+                onDragStartCell={handleDragStartBench}
+                onDragEndCell={clearDragState}
+                onDragOverCell={handleDragOverBench}
+                onDragEnterCell={handleDragOverBench}
+                onDragLeaveCell={handleDragLeaveCell}
+                onDropCell={handleDropOnBench}
+                onDoubleClickCell={handleBenchToBoard}
+              />
+            ))}
+            </div>
           </div>
         </div>
 
@@ -321,3 +468,5 @@ export function TeamBoard() {
     </div>
   );
 }
+
+export default TeamBoard;

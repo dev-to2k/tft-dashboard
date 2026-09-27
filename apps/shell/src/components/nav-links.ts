@@ -12,7 +12,11 @@ export const navLinks: NavLink[] = [
   { href: '/builder', key: 'builder' },
 ];
 
-export function isActivePath(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/';
-  return pathname.startsWith(href);
+export function isActivePath(pathname: string | null | undefined, href: string): boolean {
+  // usePathname() can return null (e.g. during fallback render / no pages dir context).
+  // Guard so callers never hit `null.startsWith` and crash the navigation render.
+  const path = pathname ?? '';
+  if (href === '/') return path === '/';
+  if (!path) return false;
+  return path.startsWith(href);
 }

@@ -24,7 +24,8 @@ function WikiChampionsContent() {
 
   const { isLoading, isError, error, refetch, data } = useChampions();
   const { data: staticData } = useStaticData();
-  const showLoading = !useMounted() || isLoading;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading;
 
   const merged = useMemo(() => {
     const next = new URLSearchParams(params.toString());
@@ -54,8 +55,8 @@ function WikiChampionsContent() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-8">
+      <div className="space-y-2">
         <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.championsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {showLoading ? (
@@ -140,12 +141,12 @@ function WikiChampionsContent() {
           />
 
           {/* Champion Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="wiki-grid grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filtered.map((champ) => (
               <Link
                 key={champ.id}
                 href={`/wiki/champions/${champ.slug}`}
-                className={`group relative overflow-hidden rounded-xl border-2 bg-[var(--card-bg)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${costBorderClass[champ.cost] ?? 'border-[var(--border)]'}`}
+                className={`group relative overflow-hidden rounded-xl border-2 bg-[var(--card-bg)] p-4 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] motion-reduce:transform-none motion-reduce:transition-none ${costBorderClass[champ.cost] ?? 'border-[var(--border)]'}`}
               >
                 <ChampionAvatar
                   name={champ.name}

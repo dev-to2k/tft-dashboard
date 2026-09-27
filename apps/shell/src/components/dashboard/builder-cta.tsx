@@ -11,7 +11,7 @@ export function BuilderCta() {
   return (
     <section
       aria-labelledby="builder-cta-heading"
-      className="relative overflow-hidden rounded-2xl border border-[var(--accent-gold)]/30 bg-gradient-to-br from-[var(--accent-gold)]/15 via-[var(--card-bg)] to-[var(--card-bg)] p-8 lg:p-10"
+      className="cv-auto relative overflow-hidden rounded-2xl border border-[var(--accent-gold)]/30 bg-gradient-to-br from-[var(--accent-gold)]/15 via-[var(--card-bg)] to-[var(--card-bg)] p-8 lg:p-10"
     >
       <div
         aria-hidden="true"

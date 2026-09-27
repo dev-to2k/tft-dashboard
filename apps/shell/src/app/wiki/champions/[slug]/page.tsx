@@ -4,17 +4,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useMetaStats, useStaticData } from '@tft/api';
+import type { TftChampion } from '@tft/types';
 import { useTeamBuilderStore } from '@tft/store';
 import { Button, TierBadge, costTextClass, tierVar } from '@tft/ui';
+import { fixed, intText, safeImageSrc, safeNumber, toArray } from '@tft/utils';
 import { ChampionAvatar } from '@/components/champion-avatar';
 import { useTryComp } from '@/hooks/use-try-comp';
 import { useDictionary } from '@/i18n/use-dictionary';
 import { useMounted } from '@/hooks/use-mounted';
+import { safeDecodeParam, safeFindBy } from '@/lib/safe-param';
 
 export default function ChampionDetailPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
-  const slug = decodeURIComponent(params.slug ?? '');
+  // Guarded decode: a malformed `%` escape in the URL used to throw
+  // `URIError` during render and blank the whole wiki detail page.
+  const slug = safeDecodeParam(params.slug);
   const { data: staticData, isLoading: isStaticLoading } = useStaticData();
   const { champions: metaChampions, comps, isLoading: isMetaLoading } = useMetaStats();
   const addChampion = useTeamBuilderStore((s) => s.addChampion);
@@ -23,13 +28,12 @@ export default function ChampionDetailPage() {
   const mounted = useMounted();
   const showLoading = !mounted || isStaticLoading;
 
-  const champion = (staticData?.champions ?? []).find(
-    (c) => c.slug === slug || c.id === slug,
-  );
-  const meta = metaChampions.find((c) => c.championId === champion?.id);
+  const champion = safeFindBy(staticData?.champions, (c) => c?.slug === slug || c?.id === slug);
+  const meta = safeFindBy(metaChampions, (c) => c?.championId === champion?.id);
+  const championTraits = champion?.traits ?? [];
   const featuring = champion
-    ? comps
-        .filter((comp) => comp.champions.includes(champion.name))
+    ? (comps ?? [])
+        .filter((comp) => (comp.champions ?? []).includes(champion.name))
         .sort((a, b) => b.pickRate - a.pickRate)
         .slice(0, 4)
     : [];
@@ -38,7 +42,7 @@ export default function ChampionDetailPage() {
         .filter((c) => c.id !== champion.id)
         .map((c) => ({
           champ: c,
-          shared: c.traits.filter((t) => champion.traits.includes(t)).length,
+          shared: (c.traits ?? []).filter((t) => championTraits.includes(t)).length,
         }))
         .filter((entry) => entry.shared > 0)
         .sort((a, b) => b.shared - a.shared || a.champ.cost - b.champ.cost)
@@ -49,7 +53,7 @@ export default function ChampionDetailPage() {
     return (
       <div className="space-y-6">
         <div className="h-64 animate-pulse rounded-2xl bg-[var(--foreground)]/10" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-20 animate-pulse rounded-xl bg-[var(--foreground)]/10" />
           ))}
@@ -69,13 +73,16 @@ export default function ChampionDetailPage() {
     );
   }
 
+  // Upstream static payload is runtime-shaped data, so read every field
+  // defensively — a missing `stats`/`traits` block used to throw mid-render.
+  const baseStats: Partial<TftChampion['stats']> = champion.stats ?? {};
   const stats: { label: string; value: string }[] = [
-    { label: dict.wiki.statHp, value: champion.stats.hp.toLocaleString(numberLocale) },
-    { label: dict.wiki.statArmor, value: String(champion.stats.armor) },
-    { label: dict.wiki.statMr, value: String(champion.stats.magicResist) },
-    { label: dict.wiki.statAd, value: String(champion.stats.attackDamage) },
-    { label: dict.wiki.statAs, value: String(champion.stats.attackSpeed) },
-    { label: dict.wiki.statRange, value: String(champion.stats.range) },
+    { label: dict.wiki.statHp, value: Number(baseStats.hp ?? 0).toLocaleString(numberLocale) },
+    { label: dict.wiki.statArmor, value: String(baseStats.armor ?? 0) },
+    { label: dict.wiki.statMr, value: String(baseStats.magicResist ?? 0) },
+    { label: dict.wiki.statAd, value: String(baseStats.attackDamage ?? 0) },
+    { label: dict.wiki.statAs, value: String(baseStats.attackSpeed ?? 0) },
+    { label: dict.wiki.statRange, value: String(baseStats.range ?? 0) },
   ];
 
   return (
@@ -90,9 +97,9 @@ export default function ChampionDetailPage() {
       {/* Header with splash art */}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          {champion.splashUrl ? (
+          {splash ? (
             <Image
-              src={champion.splashUrl}
+              src={splash}
               alt=""
               fill
               priority
@@ -121,7 +128,7 @@ export default function ChampionDetailPage() {
               <span className={`text-sm font-black ${costTextClass[champion.cost] ?? ''}`}>
                 {champion.cost}-cost
               </span>
-              {champion.traits.map((trait) => (
+              {championTraits.map((trait) => (
                 <Link
                   key={trait}
                   href={`/wiki/traits?q=${encodeURIComponent(trait)}`}
@@ -159,20 +166,20 @@ export default function ChampionDetailPage() {
       </div>
 
       {/* Ability + base stats */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
             {dict.wiki.detailAbility}
           </h2>
           <p className="mt-2 text-lg font-bold text-[var(--foreground)]">
-            {champion.ability.name || champion.name}
+            {champion.ability?.name || champion.name}
           </p>
-          {champion.ability.mana.max > 0 ? (
+          {(champion.ability?.mana?.max ?? 0) > 0 ? (
             <p className="mt-1 text-xs font-semibold text-[var(--accent-blue)]">
-              {dict.wiki.detailMana}: {champion.ability.mana.start}/{champion.ability.mana.max}
+              {dict.wiki.detailMana}: {champion.ability?.mana?.start ?? 0}/{champion.ability?.mana?.max ?? 0}
             </p>
           ) : null}
-          {champion.ability.description ? (
+          {champion.ability?.description ? (
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {champion.ability.description}
             </p>
@@ -208,7 +215,7 @@ export default function ChampionDetailPage() {
             {featuring.map((comp) => (
               <div
                 key={comp.id}
-                className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-all hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/30"
+                className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-[transform,opacity,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/30"
               >
                 <span
                   aria-hidden="true"
@@ -239,12 +246,12 @@ export default function ChampionDetailPage() {
           <h2 id="similar-heading" className="mb-3 text-lg font-bold text-[var(--foreground)]">
             {dict.wiki.detailSimilar}
           </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {similar.map(({ champ }) => (
               <Link
                 key={champ.id}
                 href={`/wiki/champions/${champ.slug}`}
-                className="group rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-3 text-center transition-all hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                className="group rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-3 text-center transition-[transform,opacity,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               >
                 <ChampionAvatar
                   name={champ.name}

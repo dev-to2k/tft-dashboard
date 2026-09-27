@@ -66,13 +66,13 @@ export function CompSpotlight({ comp, onClose }: CompSpotlightProps) {
         type="button"
         aria-label={dict.common.close}
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+        className="spot-overlay-enter absolute inset-0 cursor-default bg-black/70"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={comp.name}
-        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-6 shadow-2xl"
+        className="spot-panel-enter relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-6 shadow-2xl motion-reduce:animate-none"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -127,7 +127,7 @@ export function CompSpotlight({ comp, onClose }: CompSpotlightProps) {
         <h3 className="mb-2 mt-5 text-sm font-bold uppercase tracking-wider text-muted-foreground">
           {dict.meta.units}
         </h3>
-        <div className="grid grid-cols-15 gap-1 rounded-xl border border-[var(--border)] bg-[var(--background)]/50 p-3">
+        <div className="relative grid grid-cols-15 gap-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)]/50 p-3 isolate">
           {board.map((slotId, index) => {
             const { col, row } = boardGridPosition(index);
             const entry = slotId ? lookup(slotId) : null;
@@ -136,11 +136,12 @@ export function CompSpotlight({ comp, onClose }: CompSpotlightProps) {
             return (
               <div
                 key={`spot-${index}`}
-                className="col-span-2"
+                className="spot-hex-enter col-span-2 min-h-0 min-w-0 motion-reduce:animate-none"
                 style={{
                   gridColumnStart: col,
                   gridRowStart: row,
                   marginTop: row > 1 ? '-28%' : undefined,
+                  animationDelay: `${Math.min(index * 12, 240)}ms`,
                 }}
               >
                 <UnitHex entry={display} emptyLabel="" size="bench" />

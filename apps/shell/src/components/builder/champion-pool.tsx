@@ -25,7 +25,8 @@ export function ChampionPool() {
   const { data, isLoading, isError, error, refetch } = useStaticData();
   const { dict } = useDictionary();
   const t = dict.builder;
-  const showLoading = !useMounted() || isLoading;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading;
 
   const merged = useMemo(() => {
     const next = new URLSearchParams(params.toString());

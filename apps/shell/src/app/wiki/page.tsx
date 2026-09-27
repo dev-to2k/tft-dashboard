@@ -105,18 +105,18 @@ export default function WikiHubPage() {
             </h2>
           </div>
           {isMetaLoading ? (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="h-[76px] animate-pulse rounded-xl bg-[var(--foreground)]/10" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="wiki-grid grid grid-cols-2 gap-3 lg:grid-cols-4">
               {hotChampions.map((champ) => (
                 <Link
                   key={champ.championId}
                   href={`/wiki/champions?q=${encodeURIComponent(champ.name)}`}
-                  className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-all hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                  className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-3 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent-gold)]/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] motion-reduce:transform-none motion-reduce:transition-none"
                 >
                   <ChampionAvatar
                     name={champ.name}
@@ -150,10 +150,10 @@ export default function WikiHubPage() {
             <Link
               key={cat.href}
               href={cat.href}
-              className={`group flex items-center gap-4 p-4 transition-colors hover:bg-[var(--accent-gold)]/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)] sm:p-5 ${index > 0 ? 'border-t border-[var(--border)]' : ''}`}
+              className={`group flex items-center gap-4 p-4 transition-[transform,background-color] duration-200 ease-out hover:bg-[var(--accent-gold)]/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)] motion-reduce:transition-none sm:p-5 ${index > 0 ? 'border-t border-[var(--border)]' : ''}`}
             >
               <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--background)] transition-transform group-hover:scale-105"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--background)] transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
                 style={{ color: cat.color }}
               >
                 {cat.icon}
@@ -186,7 +186,7 @@ export default function WikiHubPage() {
               </div>
               <span
                 aria-hidden="true"
-                className="shrink-0 text-lg text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-[var(--accent-gold)]"
+                className="shrink-0 text-lg text-muted-foreground transition-[transform,opacity,color] duration-200 group-hover:translate-x-1 group-hover:text-[var(--accent-gold)]"
               >
                 &rarr;
               </span>

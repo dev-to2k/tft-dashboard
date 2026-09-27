@@ -32,6 +32,23 @@ const MIN_CHAMPIONS = 50;
 
 const stringsCache = new Map<GameLocale, Promise<TftStrings>>();
 
+/** Same short timeout + single retry as the main dump (see community-dragon). */
+async function fetchStringsWithRetry(url: string): Promise<Response> {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt <= 1; attempt++) {
+    try {
+      return await fetch(url, {
+        headers: { 'User-Agent': 'tft-dashboard' },
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 1) await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+  throw lastError;
+}
+
 /** Fetch localized display names (empty maps = fall back to English). */
 export function fetchTftStrings(locale: GameLocale): Promise<TftStrings> {
   const cached = stringsCache.get(locale);
@@ -48,9 +65,7 @@ async function loadTftStrings(locale: GameLocale): Promise<TftStrings> {
   const empty: TftStrings = { champions: new Map(), traits: new Map() };
   if (locale === 'en') return empty;
 
-  const response = await fetch(STRINGS_URL, {
-    headers: { 'User-Agent': 'tft-dashboard' },
-  });
+  const response = await fetchStringsWithRetry(STRINGS_URL);
   if (!response.ok) {
     throw new Error(`Failed to fetch TFT strings (${locale}): ${response.status}`);
   }

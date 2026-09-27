@@ -6,6 +6,7 @@ import { TrendingComps } from '@/components/dashboard/trending-comps';
 import { TopChampions } from '@/components/dashboard/top-champions';
 import { BuilderCta } from '@/components/dashboard/builder-cta';
 import { HeroShowcase } from '@/components/dashboard/hero-showcase';
+import { Reveal } from '@/components/reveal';
 import { useDictionary } from '@/i18n/use-dictionary';
 
 function ChartIcon() {
@@ -48,80 +49,93 @@ export function HomeSections() {
   const { dict } = useDictionary();
 
   return (
-    <div className="mx-auto w-full max-w-[1440px] space-y-10">
+    <div className="w-full space-y-8">
       {/* Live meta spotlight */}
-      <HeroShowcase />
+      <Reveal>
+        <HeroShowcase />
+      </Reveal>
 
       {/* Quick Stats */}
-      <section aria-label={dict.stats.gamesAnalysed}>
-        <QuickStats />
-      </section>
+      <Reveal>
+        <section aria-label={dict.stats.gamesAnalysed}>
+          <QuickStats />
+        </section>
+      </Reveal>
 
       {/* Trending Comps */}
-      <section aria-labelledby="trending-heading">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="trending-heading" className="text-xl font-bold text-[var(--foreground)]">
-            {dict.home.trending}
-          </h2>
-          <Link
-            href="/meta"
-            className="rounded text-sm font-medium text-[var(--accent-gold)] transition-colors hover:text-[var(--accent-blue)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
-            {dict.common.viewAll}
-          </Link>
-        </div>
-        <TrendingComps />
-      </section>
+      <Reveal className="overflow-visible">
+        <section aria-labelledby="trending-heading" className="overflow-visible">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 id="trending-heading" className="text-xl font-bold text-[var(--foreground)]">
+              {dict.home.trending}
+            </h2>
+            <Link
+              href="/meta"
+              className="rounded text-sm font-medium text-[var(--accent-gold)] transition-colors hover:text-[var(--accent-blue)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              {dict.common.viewAll}
+            </Link>
+          </div>
+          <TrendingComps />
+        </section>
+      </Reveal>
 
       {/* Top Champions */}
-      <section aria-labelledby="top-champions-heading">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="top-champions-heading" className="text-xl font-bold text-[var(--foreground)]">
-            {dict.home.topChampions}
-          </h2>
-          <Link
-            href="/meta/champions"
-            className="rounded text-sm font-medium text-[var(--accent-gold)] transition-colors hover:text-[var(--accent-blue)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-          >
-            {dict.common.viewAll}
-          </Link>
-        </div>
-        <TopChampions />
-      </section>
+      <Reveal className="overflow-visible">
+        <section aria-labelledby="top-champions-heading" className="overflow-visible">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 id="top-champions-heading" className="text-xl font-bold text-[var(--foreground)]">
+              {dict.home.topChampions}
+            </h2>
+            <Link
+              href="/meta/champions"
+              className="rounded text-sm font-medium text-[var(--accent-gold)] transition-colors hover:text-[var(--accent-blue)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              {dict.common.viewAll}
+            </Link>
+          </div>
+          <TopChampions />
+        </section>
+      </Reveal>
 
       {/* Builder CTA */}
-      <BuilderCta />
+      <Reveal>
+        <BuilderCta />
+      </Reveal>
 
       {/* Quick Links */}
-      <section aria-labelledby="explore-heading">
-        <h2 id="explore-heading" className="mb-4 text-xl font-bold text-[var(--foreground)]">
-          {dict.home.explore}
-        </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {dict.home.quickLinks.map((link, index) => {
-            const Icon = icons[index] ?? ChartIcon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/40 hover:shadow-lg hover:shadow-[var(--accent-gold)]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-              >
-                <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconClasses[index] ?? ''}`}
-                >
-                  <Icon />
-                </span>
-                <h3 className="mt-3 text-lg font-bold text-[var(--foreground)]">
-                  {link.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {link.description}
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      <Reveal>
+        <section aria-labelledby="explore-heading">
+          <h2 id="explore-heading" className="mb-4 text-xl font-bold text-[var(--foreground)]">
+            {dict.home.explore}
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {dict.home.quickLinks.map((link, index) => {
+              const Icon = icons[index] ?? ChartIcon;
+              return (
+                <Reveal key={link.href} delay={Math.min(index, 5) * 50}>
+                  <Link
+                    href={link.href}
+                    className="group block rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 transition-[border-color,box-shadow,transform,opacity] duration-200 hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/40 hover:shadow-lg hover:shadow-[var(--accent-gold)]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                  >
+                    <span
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconClasses[index] ?? ''}`}
+                    >
+                      <Icon />
+                    </span>
+                    <h3 className="mt-3 text-lg font-bold text-[var(--foreground)]">
+                      {link.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {link.description}
+                    </p>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
+        </section>
+      </Reveal>
     </div>
   );
 }

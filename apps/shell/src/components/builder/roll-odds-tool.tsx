@@ -69,7 +69,7 @@ export function RollOddsTool() {
                 type="button"
                 onClick={() => setTargetCost(cost)}
                 aria-pressed={targetCost === cost}
-                className={`h-8 w-8 rounded-lg text-xs font-black transition-all active:scale-95 ${
+                className={`h-8 w-8 rounded-lg text-xs font-black transition-transform active:scale-95 ${
                   targetCost === cost
                     ? 'bg-[var(--accent-gold)] text-[var(--gold-foreground)]'
                     : 'border border-[var(--border)] bg-[var(--background)] text-muted-foreground hover:text-[var(--foreground)]'
@@ -106,7 +106,7 @@ export function RollOddsTool() {
               </span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--background)]">
                 <div
-                  className={`h-full rounded-full transition-all ${cost === targetCost ? 'bg-[var(--accent-gold)]' : 'bg-[var(--foreground)]/30'}`}
+                  className={`h-full rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none ${cost === targetCost ? 'bg-[var(--accent-gold)]' : 'bg-[var(--foreground)]/30'}`}
                   style={{ width: `${Math.max(0, Math.min(100, p * 100))}%` }}
                 />
               </div>

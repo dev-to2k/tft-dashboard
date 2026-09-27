@@ -5,13 +5,13 @@ import { cn } from '../lib/utils';
 
 const buttonVariants = {
   primary:
-    'bg-gradient-to-b from-[var(--accent-gold)] to-[var(--gold-deep)] text-[var(--gold-foreground)] font-bold shadow-[0_2px_16px_-4px_var(--accent-gold)] hover:brightness-110 hover:shadow-[0_2px_20px_-2px_var(--accent-gold)]',
+    'bg-gradient-to-b from-[var(--accent-gold)] to-[var(--gold-deep)] text-[var(--gold-foreground)] font-bold uppercase tracking-wider shadow-[0_2px_16px_-4px_var(--accent-gold)] hover:brightness-110',
   secondary:
-    'bg-gradient-to-b from-[var(--accent-blue)] to-[#087a71] text-white font-semibold shadow-[0_2px_16px_-4px_var(--accent-blue)] hover:brightness-110',
+    'bg-gradient-to-b from-[var(--accent-blue)] to-[#087a71] text-white font-semibold uppercase tracking-wider shadow-[0_2px_16px_-4px_var(--accent-blue)] hover:brightness-110',
   ghost:
-    'bg-transparent text-[var(--foreground)] hover:bg-[var(--foreground)]/10',
+    'bg-transparent text-[var(--foreground)] uppercase tracking-wider hover:bg-[var(--foreground)]/10',
   outline:
-    'border border-[var(--accent-gold)]/40 text-[var(--foreground)] hover:bg-[var(--accent-gold)]/10 hover:shadow-[0_0_14px_-4px_var(--accent-gold)]',
+    'border border-[var(--accent-gold)]/40 text-[var(--foreground)] uppercase tracking-wider hover:bg-[var(--accent-gold)]/10',
 };
 
 const buttonSizes = {
@@ -32,7 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center transition-transform transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] motion-safe:active:translate-y-px motion-safe:active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
           buttonVariants[variant],
           buttonSizes[size],
           className,

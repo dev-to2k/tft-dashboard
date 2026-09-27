@@ -3,11 +3,21 @@
 import { useMetaStats } from '@tft/api';
 import { useDictionary } from '@/i18n/use-dictionary';
 import { useMounted } from '@/hooks/use-mounted';
+import { useCountUp } from '@/hooks/use-count-up';
+import { Reveal } from '@/components/reveal';
 
 export function QuickStats() {
   const { comps, champions, overview, isLoading, isError, refetch } = useMetaStats();
   const { dict, numberLocale } = useDictionary();
-  const showLoading = !useMounted() || isLoading;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading;
+
+  const gamesTarget = overview?.totalGames ?? 0;
+  const compsTarget = overview?.trackedComps ?? 0;
+  const gamesReady = !showLoading && !isError && !!overview;
+  // rAF 800ms count-up; instant when reduced-motion (hook handles it).
+  const gamesCount = useCountUp(gamesTarget, { duration: 800, enabled: gamesReady });
+  const compsCount = useCountUp(compsTarget, { duration: 800, enabled: gamesReady });
 
   if (showLoading) {
     return (
@@ -51,8 +61,8 @@ export function QuickStats() {
     },
     {
       label: dict.stats.gamesAnalysed,
-      value: overview ? overview.totalGames.toLocaleString(numberLocale) : '—',
-      subtext: overview ? dict.stats.compsTracked(overview.trackedComps) : dict.common.noData,
+      value: overview ? gamesCount.toLocaleString(numberLocale) : '—',
+      subtext: overview ? dict.stats.compsTracked(compsCount) : dict.common.noData,
       color: 'var(--tier-b)',
     },
     {
@@ -72,18 +82,20 @@ export function QuickStats() {
   ];
 
   // Stat band (no boxes): dividers separate the four figures.
+  // Each figure fade-slides in with a 60ms stagger (transform/opacity only).
   return (
-    <dl className="grid grid-cols-2 gap-y-6 lg:grid-cols-4">
+    <dl className="grid grid-cols-2 gap-4 gap-y-6 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
       {stats.map((stat, index) => (
-        <div
+        <Reveal
           key={stat.label}
+          delay={Math.min(index, 5) * 60}
           className={index > 0 ? 'lg:border-l lg:border-[var(--border)] lg:pl-6' : ''}
         >
           <dt className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             {stat.label}
           </dt>
           <dd
-            className="mt-1 text-3xl font-black tracking-tight"
+            className="mt-1 text-3xl font-black tabular-nums tracking-tight"
             style={{ color: stat.color }}
           >
             {stat.value}
@@ -91,7 +103,7 @@ export function QuickStats() {
           <dd className="mt-1 text-xs text-muted-foreground">
             {stat.subtext}
           </dd>
-        </div>
+        </Reveal>
       ))}
     </dl>
   );

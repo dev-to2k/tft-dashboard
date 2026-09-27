@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { WikiHeader } from '@/components/wiki-header';
+import { WikiHeaderSlot } from '@/components/wiki-header-slot';
 
 export const metadata: Metadata = {
   title: 'TFT Wiki — TFT Dashboard',
@@ -15,8 +15,8 @@ export default function WikiLayout({
 }) {
   return (
     <div className="space-y-6">
-      {/* Wiki Header */}
-      <WikiHeader />
+      {/* Wiki Header (lazy client slot — keeps layout chunk stable) */}
+      <WikiHeaderSlot />
 
       {children}
     </div>

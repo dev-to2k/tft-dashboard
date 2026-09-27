@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useMetaStats, useStaticData } from '@tft/api';
 import { useTryComp } from '@/hooks/use-try-comp';
 import { usePreferencesStore } from '@tft/store';
 import { Button, LoadingSkeleton, TierBadge, tierVar, type Tier } from '@tft/ui';
+import { fixed, intText, percent, safeImageSrc, safeNumber, toArray } from '@tft/utils';
 import { ChampionAvatar } from '@/components/champion-avatar';
 import { CompSpotlight } from '@/components/comp-spotlight';
 import { TierChips } from '@/components/tier-chips';
@@ -18,8 +19,13 @@ import type { CompMetaStats } from '@tft/types';
 
 const TIERS = ['S', 'A', 'B', 'C', 'D'] as const;
 
-function isTier(value: string | null): value is Tier {
-  return value !== null && (TIERS as readonly string[]).includes(value);
+function isTier(value: string | null | undefined): value is Tier {
+  return typeof value === 'string' && (TIERS as readonly string[]).includes(value);
+}
+
+/** `tierVar[...]` is undefined for an unknown tier -> render nothing/empty CSS. */
+function tierColor(tier: string | null | undefined): string {
+  return tierVar[isTier(tier) ? tier : 'B'];
 }
 
 function MetaOverviewContent() {
@@ -51,18 +57,23 @@ function MetaOverviewContent() {
   const topComps = comps.slice(0, 3);
   const bestComp = comps[0];
 
+  // Only keep URLs on the next/image allowlist; anything else falls back to ''.
   const splashByName = new Map(
-    (staticData?.champions ?? []).map((champion) => [champion.name, champion.splashUrl]),
+    toArray(staticData?.champions).map((champion) => [champion.name, safeImageSrc(champion.splashUrl)]),
   );
   const iconByName = new Map(
-    (staticData?.champions ?? []).map((champion) => [champion.name, champion.iconUrl]),
+    toArray(staticData?.champions).map((champion) => [champion.name, safeImageSrc(champion.iconUrl)]),
   );
 
   const bestArt = bestComp
-    ? (splashByName.get(bestComp.carry) ?? splashByName.get(bestComp.champions[0] ?? '') ?? '')
+    ? safeImageSrc(
+        splashByName.get(bestComp.carry) ??
+          splashByName.get(toArray<string>(bestComp.champions)[0] ?? '') ??
+          '',
+      )
     : '';
 
-  const maxWinRate = Math.max(1, ...topChampions.map((c) => c.winRate));
+  const maxWinRate = Math.max(1, ...topChampions.map((c) => safeNumber(c.winRate)));
 
   const tryCompInBuilder = useTryComp();
 
@@ -75,7 +86,7 @@ function MetaOverviewContent() {
             <div
               className="absolute inset-0 opacity-20"
               style={{
-                background: `radial-gradient(ellipse 55% 90% at 88% 40%, ${tierVar[bestComp.tier]}, transparent)`,
+                background: `radial-gradient(ellipse 55% 90% at 88% 40%, ${tierColor(bestComp.tier)}, transparent)`,
               }}
             />
           ) : null}
@@ -101,9 +112,9 @@ function MetaOverviewContent() {
           {data ? (
             <p className="mt-1 text-xs text-muted-foreground">
               {dict.meta.setLine(
-                data.setNumber,
-                data.setName,
-                data.totalGames.toLocaleString(numberLocale),
+                safeNumber(data.setNumber),
+                data.setName ?? '',
+                intText(data.totalGames, numberLocale),
               )}
             </p>
           ) : null}
@@ -114,7 +125,7 @@ function MetaOverviewContent() {
                 {bestComp.name}
               </span>
               <span className="text-sm font-bold text-[var(--accent-gold)]">
-                {bestComp.winRate.toFixed(1)}% WR
+                {fixed(bestComp.winRate, 1)}% WR
               </span>
               <Button type="button" variant="outline" size="sm" onClick={() => tryCompInBuilder(bestComp)}>
                 {dict.meta.tryInBuilder}
@@ -162,16 +173,16 @@ function MetaOverviewContent() {
               {dict.meta.fullTierList}
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topComps.map((comp, index) => (
               <div
                 key={comp.id}
-                className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-all hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/30 hover:shadow-md"
+                className="group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--accent-gold)]/30 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none"
               >
                 <span
                   aria-hidden="true"
                   className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: `linear-gradient(90deg, transparent, ${tierVar[comp.tier]}, transparent)` }}
+                  style={{ background: `linear-gradient(90deg, transparent, ${tierColor(comp.tier)}, transparent)` }}
                 />
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
@@ -183,7 +194,7 @@ function MetaOverviewContent() {
                   {comp.name}
                 </h3>
                 <div className="mt-2 flex gap-1">
-                  {comp.champions.slice(0, 6).map((name) => (
+                  {toArray<string>(comp.champions).slice(0, 6).map((name) => (
                     <ChampionAvatar
                       key={name}
                       name={name}
@@ -195,9 +206,9 @@ function MetaOverviewContent() {
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-xs font-bold text-[var(--accent-gold)]">
-                    {comp.winRate.toFixed(1)}% WR
+                    {fixed(comp.winRate, 1)}% WR
                     <span className="ml-2 font-normal text-muted-foreground">
-                      {comp.avgPlacement.toFixed(2)} avg
+                      {fixed(comp.avgPlacement, 2)} avg
                     </span>
                   </p>
                   <div className="flex gap-1.5">
@@ -237,9 +248,15 @@ function MetaOverviewContent() {
           </div>
         </div>
         {showLoading ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <LoadingSkeleton key={i} variant="card" />
+              <div
+                key={i}
+                className="reveal"
+                style={{ '--reveal-delay': `${i * 60}ms` } as CSSProperties}
+              >
+                <LoadingSkeleton variant="card" className="skeleton-sheen" />
+              </div>
             ))}
           </div>
         ) : !isError ? (
@@ -260,7 +277,7 @@ function MetaOverviewContent() {
                     </span>
                     <ChampionAvatar
                       name={champ.name}
-                      iconUrl={champ.iconUrl}
+                      iconUrl={safeImageSrc(champ.iconUrl)}
                       cost={champ.cost}
                       size="md"
                       className="rounded-lg"
@@ -277,22 +294,22 @@ function MetaOverviewContent() {
                           <span
                             className="block h-full rounded-full"
                             style={{
-                              width: `${(champ.winRate / maxWinRate) * 100}%`,
-                              background: tierVar[champ.tier],
+                              width: `${percent((safeNumber(champ.winRate) / maxWinRate) * 100)}%`,
+                              background: tierColor(champ.tier),
                             }}
                           />
                         </span>
                         <span className="shrink-0 text-xs font-bold text-[var(--accent-gold)]">
-                          {champ.winRate.toFixed(1)}%
+                          {fixed(champ.winRate, 1)}%
                         </span>
                         <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
-                          {champ.avgPlacement.toFixed(2)} avg
+                          {fixed(champ.avgPlacement, 2)} avg
                         </span>
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-1 group-hover:text-[var(--accent-gold)] group-hover:opacity-100"
+                      className="shrink-0 text-muted-foreground opacity-0 transition-[transform,opacity,color] duration-200 group-hover:translate-x-1 group-hover:text-[var(--accent-gold)] group-hover:opacity-100"
                     >
                       &rarr;
                     </span>

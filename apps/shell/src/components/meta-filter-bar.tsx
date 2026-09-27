@@ -19,7 +19,8 @@ export function MetaFilterBar() {
   const setEloBracket = usePreferencesStore((s) => s.setEloBracket);
   const { overview, isLoading } = useMetaStats();
   const { dict } = useDictionary();
-  const showLoading = !useMounted() || isLoading || !overview;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading || !overview;
 
   // Deep-link ?elo= into the persisted preference on first paint.
   useEffect(() => {

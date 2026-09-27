@@ -81,3 +81,43 @@ export const costRingClass: Record<number, string> = {
   4: 'ring-cost-4',
   5: 'ring-cost-5',
 };
+
+// ── Neon foundation tokens ──────────────────────────────
+// Hex values mirror `:root` in `apps/shell/src/app/globals.css`.
+// Prefer `neon*Class` maps (Tailwind `@theme inline` utilities)
+// so colors follow the theme; use `neonVar` only for inline styles.
+
+export const NEON = {
+  background: '#0B0B16',
+  card: '#12121F',
+  gold: '#F0C75E',
+  purple: '#A855F7',
+  cyan: '#0AC8B9',
+  glow: '0 0 24px rgba(240, 199, 94, 0.22), 0 0 64px rgba(168, 85, 247, 0.16)',
+} as const;
+
+export const neonVar = {
+  background: 'var(--background)',
+  card: 'var(--card-bg)',
+  gold: 'var(--neon-gold)',
+  purple: 'var(--neon-purple)',
+  cyan: 'var(--neon-cyan)',
+} as const;
+
+export const neonTextClass = {
+  gold: 'text-neon-gold',
+  purple: 'text-neon-purple',
+  cyan: 'text-neon-cyan',
+} as const;
+
+export const neonBgClass = {
+  gold: 'bg-neon-gold',
+  purple: 'bg-neon-purple',
+  cyan: 'bg-neon-cyan',
+} as const;
+
+export const neonBorderClass = {
+  gold: 'border-neon-gold',
+  purple: 'border-neon-purple',
+  cyan: 'border-neon-cyan',
+} as const;

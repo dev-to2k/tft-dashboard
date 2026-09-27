@@ -14,7 +14,8 @@ function WikiTraitsContent() {
   const [search, setSearch] = useState(() => params.get('q') ?? '');
   const { data, isLoading, isError, error, refetch } = useStaticData();
   const { dict } = useDictionary();
-  const showLoading = !useMounted() || isLoading;
+  const mounted = useMounted();
+  const showLoading = !mounted || isLoading;
 
   const merged = useMemo(() => {
     const next = new URLSearchParams(params.toString());
@@ -32,8 +33,8 @@ function WikiTraitsContent() {
   );
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-8">
+      <div className="space-y-2">
         <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.traitsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {showLoading ? (
@@ -78,11 +79,11 @@ function WikiTraitsContent() {
             aria-label={dict.wiki.traitsSearchLabel}
             className="max-w-md"
           />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="wiki-grid grid grid-cols-1 gap-3 sm:grid-cols-2">
             {filtered.map((trait) => (
               <div
                 key={trait.id}
-                className="flex gap-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4"
+                className="flex gap-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:border-[var(--accent-gold)]/30 hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none"
               >
                 <ChampionAvatar
                   name={trait.name}

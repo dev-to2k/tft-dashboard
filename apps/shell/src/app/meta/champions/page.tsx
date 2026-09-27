@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useMetaStats, useStaticData } from '@tft/api';
 import { usePreferencesStore } from '@tft/store';
 import { Button, LoadingSkeleton, SearchInput, TierBadge, costBgClass, costTextClass } from '@tft/ui';
+import { fixed, safeImageSrc, safeNumber, toArray, toText } from '@tft/utils';
 import { ChampionAvatar } from '@/components/champion-avatar';
 import { TraitFilter } from '@/components/trait-filter';
 import { useDictionary } from '@/i18n/use-dictionary';
@@ -56,7 +57,7 @@ function MetaChampionsContent() {
   }, [params, search, costFilter, traitFilter, sortKey, sortDir]);
   useSyncSearchParams(merged);
 
-  const availableTraits = (staticData?.traits ?? []).map((trait) => trait.name);
+  const availableTraits = toArray(staticData?.traits).map((trait) => trait.name);
 
   const toggleTrait = (trait: string) => {
     setTraitFilter((current) =>
@@ -78,19 +79,21 @@ function MetaChampionsContent() {
   const filtered = champions
     .filter((champ) => {
       const matchesSearch =
-        champ.name.toLowerCase().includes(q) ||
-        champ.traits.some((trait) => trait.toLowerCase().includes(q));
+        toText(champ.name).toLowerCase().includes(q) ||
+        toArray<string>(champ.traits).some((trait) => toText(trait).toLowerCase().includes(q));
       const matchesCost = costFilter === null || champ.cost === costFilter;
-      const matchesTraits = traitFilter.every((trait) => champ.traits.includes(trait));
+      const matchesTraits = traitFilter.every((trait) => toArray<string>(champ.traits).includes(trait));
       return matchesSearch && matchesCost && matchesTraits;
     })
     .sort((a, b) =>
-      sortDir === 'asc' ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey],
+      sortDir === 'asc'
+        ? safeNumber(a[sortKey]) - safeNumber(b[sortKey])
+        : safeNumber(b[sortKey]) - safeNumber(a[sortKey]),
     );
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-8">
+      <div className="space-y-2">
         <h1 className="text-3xl font-black text-[var(--foreground)]">
           {dict.meta.tierListTitle}
         </h1>
@@ -194,12 +197,12 @@ function MetaChampionsContent() {
           {showLoading ? (
             <div>
               {Array.from({ length: 8 }).map((_, i) => (
-                <LoadingSkeleton key={i} variant="table-row" />
+                <LoadingSkeleton key={i} variant="table-row" className="skeleton-sheen" />
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="table-scroll overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <caption className="sr-only">
                   {dict.meta.tierListCaption}
                 </caption>
@@ -214,7 +217,7 @@ function MetaChampionsContent() {
                     <th scope="col" className="hidden px-4 py-3 font-medium md:table-cell">{t.traits}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border)]">
+                <tbody key={`${sortKey}-${sortDir}`} className="slide-enter divide-y divide-[var(--border)]">
                   {filtered.map((champ) => (
                     <tr
                       key={champ.championId}
@@ -224,7 +227,7 @@ function MetaChampionsContent() {
                         <div className="flex items-center gap-3">
                           <ChampionAvatar
                             name={champ.name}
-                            iconUrl={champ.iconUrl}
+                            iconUrl={safeImageSrc(champ.iconUrl)}
                             cost={champ.cost}
                             size="sm"
                             className="rounded-md"
@@ -252,18 +255,18 @@ function MetaChampionsContent() {
                                 : 'var(--foreground)',
                           }}
                         >
-                          {champ.winRate.toFixed(1)}%
+                          {fixed(champ.winRate, 1)}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-muted-foreground">
-                        {champ.avgPlacement.toFixed(2)}
+                        {fixed(champ.avgPlacement, 2)}
                       </td>
                       <td className="hidden px-4 py-3 text-right text-muted-foreground sm:table-cell">
-                        {champ.pickRate.toFixed(1)}%
+                        {fixed(champ.pickRate, 1)}%
                       </td>
                       <td className="hidden px-4 py-3 md:table-cell">
                         <div className="flex flex-wrap gap-1">
-                          {champ.traits.map((trait) => (
+                          {toArray(champ.traits).map((trait) => (
                             <span
                               key={trait}
                               className="rounded-full bg-[var(--background)] px-2 py-0.5 text-[10px] text-[var(--accent-blue)]"

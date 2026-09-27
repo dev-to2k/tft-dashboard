@@ -15,7 +15,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         <div
           ref={ref}
           className={cn(
-            'skeleton-sheen animate-pulse rounded-xl border border-white/10 bg-[var(--card-bg)] p-6',
+            'skeleton-sheen rounded-xl border border-white/10 bg-[var(--card-bg)] p-6 motion-safe:animate-pulse',
             className,
           )}
           {...props}
@@ -35,7 +35,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         <div
           ref={ref}
           className={cn(
-            'flex animate-pulse items-center gap-4 border-b border-white/5 p-4',
+            'skeleton-sheen flex items-center gap-4 border-b border-white/5 p-4 motion-safe:animate-pulse',
             className,
           )}
           {...props}
@@ -55,7 +55,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         <div
           ref={ref}
           className={cn(
-            'animate-pulse rounded-full bg-white/10',
+            'skeleton-sheen rounded-full bg-white/10 motion-safe:animate-pulse',
             variant === 'avatar' ? 'h-10 w-10' : 'h-8 w-8',
             className,
           )}
@@ -71,7 +71,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
           <div
             key={i}
             className={cn(
-              'animate-pulse rounded bg-white/10',
+              'skeleton-sheen rounded bg-white/10 motion-safe:animate-pulse',
               i === lines! - 1 ? 'h-3 w-2/3' : 'h-3 w-full',
             )}
           />

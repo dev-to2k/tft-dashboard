@@ -12,7 +12,8 @@ export interface StatBarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const StatBar = React.forwardRef<HTMLDivElement, StatBarProps>(
   ({ className, value, label, showLabel = true, height = 8, ...props }, ref) => {
-    const percentage = Math.min(Math.max(value * 100, 0), 100);
+    const clamped = Math.min(Math.max(value, 0), 1);
+    const percentage = clamped * 100;
     const barColor = value >= 0.5 ? 'bg-success' : 'bg-danger';
 
     return (
@@ -22,7 +23,7 @@ export const StatBar = React.forwardRef<HTMLDivElement, StatBarProps>(
             {label && (
               <span className="text-muted-foreground">{label}</span>
             )}
-            <span className="text-[var(--foreground)]">
+            <span className="text-[var(--foreground)] tabular-nums">
               {percentage.toFixed(1)}%
             </span>
           </div>
@@ -33,10 +34,10 @@ export const StatBar = React.forwardRef<HTMLDivElement, StatBarProps>(
         >
           <div
             className={cn(
-              'h-full rounded-full bg-gradient-to-b from-white/25 to-transparent transition-all duration-300',
+              'h-full w-full origin-left rounded-full bg-gradient-to-b from-white/25 to-transparent transition-transform duration-300',
               barColor,
             )}
-            style={{ width: `${percentage}%` }}
+            style={{ transform: `scaleX(${clamped})` }}
           />
         </div>
       </div>

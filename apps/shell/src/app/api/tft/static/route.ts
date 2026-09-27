@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { fetchStaticData } from '@tft/api/server';
-import { normalizeGameLocale } from '@tft/api';
+import { fetchStaticData, normalizeGameLocale } from '@tft/api/server';
 
 // Community Dragon dumps change with every patch.
 export const revalidate = 3600;

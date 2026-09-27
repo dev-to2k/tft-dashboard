@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { fetchMetaStats } from '@tft/api/server';
-import { normalizeGameLocale } from '@tft/api';
+import { fetchMetaStats, normalizeGameLocale } from '@tft/api/server';
 
 // Stats are aggregated upstream a few times a day; refresh every 5 minutes.
 export const revalidate = 300;
