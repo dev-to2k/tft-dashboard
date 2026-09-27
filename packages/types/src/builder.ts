@@ -6,3 +6,13 @@ export interface TeamBuilderState {
   xp: number;
   selectedAugments: (string | null)[];
 }
+
+export interface SavedComp {
+  id: string;
+  name: string;
+  board: (string | null)[];
+  bench: (string | null)[];
+  level: number;
+  gold: number;
+  createdAt: string;
+}

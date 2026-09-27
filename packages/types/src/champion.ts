@@ -22,5 +22,7 @@ export interface TftChampion {
     range: number;
   };
   iconUrl: string;
+  /** Full-size centered splash art (Community Dragon `icon` field). */
+  splashUrl: string;
   setName: string;
 }

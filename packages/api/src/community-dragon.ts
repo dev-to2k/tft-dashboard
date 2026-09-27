@@ -1,4 +1,5 @@
 import type { TftChampion, TftTrait, TftItem, TftAugment } from '@tft/types';
+import { fetchTftStrings, normalizeGameLocale, type GameLocale } from './tft-strings';
 
 /**
  * Community Dragon static game data (free, no API key, CORS enabled).
@@ -91,6 +92,7 @@ export function slugify(name: string): string {
 function cleanText(raw?: string): string {
   if (!raw) return '';
   return raw
+    .replace(/\\n/g, ' ')
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/%i:[a-zA-Z0-9_]+%/g, '')
@@ -178,6 +180,7 @@ function mapChampion(champion: RawChampion, setName: string): TftChampion {
       range: stats.range ?? 0,
     },
     iconUrl: toCdragonUrl(champion.squareIcon ?? champion.tileIcon ?? champion.icon),
+    splashUrl: toCdragonUrl(champion.icon),
     setName,
   };
 }
@@ -233,20 +236,22 @@ export interface TftStaticData {
   augments: TftAugment[];
 }
 
-let staticCache: Promise<TftStaticData> | null = null;
+let staticCache = new Map<string, Promise<TftStaticData>>();
 
 /** Fetch + trim the Community Dragon dump down to the current set only. */
-export function fetchStaticData(): Promise<TftStaticData> {
-  if (!staticCache) {
-    staticCache = loadStaticData().catch((error) => {
-      staticCache = null;
-      throw error;
-    });
-  }
-  return staticCache;
+export function fetchStaticData(locale: GameLocale = 'en'): Promise<TftStaticData> {
+  const key = normalizeGameLocale(locale);
+  const cached = staticCache.get(key);
+  if (cached) return cached;
+  const task = loadStaticData(key).catch((error) => {
+    staticCache.delete(key);
+    throw error;
+  });
+  staticCache.set(key, task);
+  return task;
 }
 
-async function loadStaticData(): Promise<TftStaticData> {
+async function loadStaticData(locale: GameLocale): Promise<TftStaticData> {
   const response = await fetch(COMMUNITY_DRAGON_DATA_URL, {
     headers: { 'User-Agent': 'tft-dashboard' },
   });
@@ -280,6 +285,24 @@ async function loadStaticData(): Promise<TftStaticData> {
     .map((apiName) => itemsByName.get(apiName))
     .filter((item): item is RawItem => Boolean(item) && item!.isAugment !== false)
     .map(mapAugment);
+
+  // Localized display-name overlay (slugs/ids stay English-derived and stable).
+  if (locale !== 'en') {
+    const strings = await fetchTftStrings(locale);
+    const traitViByEn = new Map<string, string>();
+    for (const trait of traits) {
+      const localized = strings.traits.get(trait.id);
+      if (localized) {
+        traitViByEn.set(trait.name, localized);
+        trait.name = localized;
+      }
+    }
+    for (const champion of champions) {
+      const localized = strings.champions.get(champion.id);
+      if (localized) champion.name = localized;
+      champion.traits = champion.traits.map((name) => traitViByEn.get(name) ?? name);
+    }
+  }
 
   return {
     set: { id: set.mutator, number: set.number, name: setName },

@@ -41,7 +41,7 @@ export function DataTable<T>({
     <div className={cn('w-full overflow-auto', className)}>
       <table className="w-full caption-bottom text-sm">
         <thead>
-          <tr className="border-b border-[var(--border)]">
+          <tr className="border-b border-[var(--accent-gold)]/30 bg-gradient-to-b from-[var(--accent-gold)]/[0.07] to-transparent">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -54,8 +54,8 @@ export function DataTable<T>({
                     : undefined
                 }
                 className={cn(
-                  'h-10 px-4 text-left align-middle font-medium text-muted-foreground',
-                  col.sortable && 'cursor-pointer select-none hover:text-[var(--foreground)]',
+                  'h-10 px-4 text-left align-middle text-[11px] font-black uppercase tracking-widest text-muted-foreground',
+                  col.sortable && 'cursor-pointer select-none hover:text-[var(--accent-gold)]',
                   col.className,
                 )}
                 onClick={() => col.sortable && handleSort(col.key)}
@@ -86,7 +86,7 @@ export function DataTable<T>({
             data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-[var(--border)]/50 transition-colors hover:bg-[var(--foreground)]/5"
+                className="border-b border-[var(--border)]/50 transition-colors hover:bg-[var(--accent-gold)]/[0.06]"
               >
                 {columns.map((col) => (
                   <td

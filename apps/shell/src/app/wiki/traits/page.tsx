@@ -1,13 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useStaticData } from '@tft/api';
 import { Button, LoadingSkeleton, SearchInput } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
+import { setOrDelete, useSyncSearchParams } from '@/hooks/use-sync-search-params';
 
-export default function WikiTraitsPage() {
-  const [search, setSearch] = useState('');
+function WikiTraitsContent() {
+  const params = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
   const { data, isLoading, isError, error, refetch } = useStaticData();
+  const { dict } = useDictionary();
+  const showLoading = !useMounted() || isLoading;
+
+  const merged = useMemo(() => {
+    const next = new URLSearchParams(params.toString());
+    setOrDelete(next, 'q', search.trim() || null);
+    return next.toString();
+  }, [params, search]);
+  useSyncSearchParams(merged);
 
   const traits = data?.traits ?? [];
   const q = search.trim().toLowerCase();
@@ -20,17 +34,17 @@ export default function WikiTraitsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-[var(--foreground)]">Traits</h2>
+        <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.traitsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? (
+          {showLoading ? (
             <span className="block h-4 w-64 animate-pulse rounded bg-[var(--foreground)]/10" />
           ) : (
-            `Browse all ${traits.length} traits in ${data?.set.name ?? 'the current set'}`
+            dict.wiki.traitsSubtitle(traits.length, data?.set.name ?? dict.wiki.currentSet)
           )}
         </p>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {Array.from({ length: 6 }, (_, i) => (
             <LoadingSkeleton key={i} variant="card" />
@@ -38,9 +52,9 @@ export default function WikiTraitsPage() {
         </div>
       )}
 
-      {!isLoading && isError && (
+      {!showLoading && isError && (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
-          <p className="text-sm text-muted-foreground">Failed to load traits.</p>
+          <p className="text-sm text-muted-foreground">{dict.wiki.traitsError}</p>
           {error && (
             <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
           )}
@@ -50,18 +64,18 @@ export default function WikiTraitsPage() {
             className="mt-4"
             onClick={() => void refetch()}
           >
-            Retry
+            {dict.common.retry}
           </Button>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <>
           <SearchInput
-            placeholder="Search traits..."
+            placeholder={dict.wiki.traitsSearch}
             value={search}
             onChange={setSearch}
-            aria-label="Search traits"
+            aria-label={dict.wiki.traitsSearchLabel}
             className="max-w-md"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -82,11 +96,11 @@ export default function WikiTraitsPage() {
                   </h3>
                   {trait.tiers.length > 0 && (
                     <p className="mt-0.5 text-xs font-semibold text-[var(--accent-gold)]">
-                      Bonus at {trait.tiers.map((t) => t.count).join(' / ')}
+                      {dict.wiki.bonusAt} {trait.tiers.map((t) => t.count).join(' / ')}
                     </p>
                   )}
                   <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-                    {trait.description || 'No description available.'}
+                    {trait.description || dict.wiki.noDescription}
                   </p>
                 </div>
               </div>
@@ -94,12 +108,28 @@ export default function WikiTraitsPage() {
           </div>
           {filtered.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
-              No traits match your search.
+              {dict.wiki.traitsEmpty}
             </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+export default function WikiTraitsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {Array.from({ length: 6 }, (_, i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+      }
+    >
+      <WikiTraitsContent />
+    </Suspense>
   );
 }
 

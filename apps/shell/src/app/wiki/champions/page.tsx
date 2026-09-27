@@ -1,44 +1,72 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { useChampions, useStaticData } from '@tft/api';
 import { Button, LoadingSkeleton, SearchInput, costBgClass, costBorderClass } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
+import { TraitFilter } from '@/components/trait-filter';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
+import { parseListParam, setOrDelete, useSyncSearchParams } from '@/hooks/use-sync-search-params';
 
 function WikiChampionsContent() {
   const params = useSearchParams();
   const [search, setSearch] = useState(() => params.get('q') ?? '');
-  const [costFilter, setCostFilter] = useState<number | null>(null);
+  const [costFilter, setCostFilter] = useState<number | null>(() => {
+    const cost = Number(params.get('cost'));
+    return cost >= 1 && cost <= 5 ? cost : null;
+  });
+  const [traitFilter, setTraitFilter] = useState<string[]>(() => parseListParam(params.get('traits')));
+  const { dict } = useDictionary();
 
   const { isLoading, isError, error, refetch, data } = useChampions();
   const { data: staticData } = useStaticData();
+  const showLoading = !useMounted() || isLoading;
+
+  const merged = useMemo(() => {
+    const next = new URLSearchParams(params.toString());
+    setOrDelete(next, 'q', search.trim() || null);
+    setOrDelete(next, 'cost', costFilter === null ? null : String(costFilter));
+    setOrDelete(next, 'traits', traitFilter.length > 0 ? traitFilter.join(',') : null);
+    return next.toString();
+  }, [params, search, costFilter, traitFilter]);
+  useSyncSearchParams(merged);
 
   const champions = data ?? [];
   const set = staticData?.set;
+  const availableTraits = (staticData?.traits ?? []).map((t) => t.name);
+
+  const toggleTrait = (trait: string) => {
+    setTraitFilter((current) =>
+      current.includes(trait) ? current.filter((t) => t !== trait) : [...current, trait],
+    );
+  };
 
   const filtered = champions.filter((c) => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.traits.some((t) => t.toLowerCase().includes(search.toLowerCase()));
     const matchesCost = costFilter === null || c.cost === costFilter;
-    return matchesSearch && matchesCost;
+    const matchesTraits = traitFilter.every((t) => c.traits.includes(t));
+    return matchesSearch && matchesCost && matchesTraits;
   });
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-[var(--foreground)]">Champions</h2>
+        <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.championsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? (
+          {showLoading ? (
             <span className="block h-4 w-64 animate-pulse rounded bg-white/10" />
           ) : (
-            `Browse all ${champions.length} champions in ${set?.name ?? 'the current set'}`
+            dict.wiki.championsSubtitle(champions.length, set?.name ?? dict.wiki.currentSet)
           )}
         </p>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }, (_, i) => (
             <LoadingSkeleton key={i} variant="card" />
@@ -46,9 +74,9 @@ function WikiChampionsContent() {
         </div>
       )}
 
-      {!isLoading && isError && (
+      {!showLoading && isError && (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
-          <p className="text-sm text-muted-foreground">Failed to load champions.</p>
+          <p className="text-sm text-muted-foreground">{dict.wiki.championsError}</p>
           {error && (
             <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
           )}
@@ -58,40 +86,40 @@ function WikiChampionsContent() {
             className="mt-4"
             onClick={() => void refetch()}
           >
-            Retry
+            {dict.common.retry}
           </Button>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <>
           {/* Filters */}
           <div className="flex flex-wrap gap-3">
             <SearchInput
-              placeholder="Search by name or trait..."
+              placeholder={dict.wiki.championsSearch}
               value={search}
               onChange={setSearch}
-              aria-label="Search champions by name or trait"
+              aria-label={dict.wiki.championsSearchLabel}
               className="min-w-[200px] flex-1"
             />
             <div className="flex gap-1.5">
               <button
                 onClick={() => setCostFilter(null)}
                 aria-pressed={costFilter === null}
-                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                   costFilter === null
                     ? 'bg-[var(--accent-gold)] text-[var(--background)]'
                     : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
                 }`}
               >
-                All
+                {dict.common.all}
               </button>
               {[1, 2, 3, 4, 5].map((cost) => (
                 <button
                   key={cost}
                   onClick={() => setCostFilter(costFilter === cost ? null : cost)}
                   aria-pressed={costFilter === cost}
-                  className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
+                  className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                     costFilter === cost
                       ? `text-white ${costBgClass[cost] ?? ''}`
                       : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
@@ -102,13 +130,22 @@ function WikiChampionsContent() {
               ))}
             </div>
           </div>
+          <TraitFilter
+            available={availableTraits}
+            selected={traitFilter}
+            onToggle={toggleTrait}
+            onClear={() => setTraitFilter([])}
+            label={dict.common.traits}
+            clearLabel={dict.common.clear}
+          />
 
           {/* Champion Grid */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filtered.map((champ) => (
-              <div
+              <Link
                 key={champ.id}
-                className={`group relative overflow-hidden rounded-xl border-2 bg-[var(--card-bg)] p-4 transition-all hover:shadow-lg ${costBorderClass[champ.cost] ?? 'border-[var(--border)]'}`}
+                href={`/wiki/champions/${champ.slug}`}
+                className={`group relative overflow-hidden rounded-xl border-2 bg-[var(--card-bg)] p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${costBorderClass[champ.cost] ?? 'border-[var(--border)]'}`}
               >
                 <ChampionAvatar
                   name={champ.name}
@@ -140,13 +177,13 @@ function WikiChampionsContent() {
                 >
                   {champ.cost}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
           {filtered.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
-              No champions match your filters.
+              {dict.wiki.championsEmpty}
             </div>
           )}
         </>
@@ -170,4 +207,3 @@ export default function WikiChampionsPage() {
     </Suspense>
   );
 }
-

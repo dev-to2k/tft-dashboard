@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { Navigation } from '@/components/navigation';
+import { SkipLink } from '@/components/skip-link';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -21,9 +22,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-[var(--background)] text-[var(--foreground)]`}>
         <Providers>
-          <div className="flex min-h-screen flex-col lg:flex-row">
+          <SkipLink />
+          <div className="flex min-h-screen flex-col">
             <Navigation />
-            <main className="flex-1 overflow-auto p-4 lg:p-8">
+            <main id="main-content" className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
               {children}
             </main>
           </div>

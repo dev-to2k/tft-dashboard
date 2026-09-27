@@ -1,18 +1,28 @@
 'use client';
 
 import { useTheme } from '@/app/providers';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
 
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
+  const { dict } = useDictionary();
+  const mounted = useMounted();
+
+  if (!mounted) {
+    return <span aria-hidden="true" className={`h-9 w-9 ${className}`} />;
+  }
+
   const isDark = theme === 'dark';
+  const label = isDark ? dict.theme.toLight : dict.theme.toDark;
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={label}
       aria-pressed={!isDark}
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={label}
       className={`flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)] ${className}`}
     >
       {isDark ? (

@@ -1,5 +1,6 @@
 import type { ChampionMetaStats, CompMetaStats, MetaOverview, TftChampion, TftTrait } from '@tft/types';
 import { fetchStaticData } from './community-dragon';
+import { normalizeGameLocale, type GameLocale } from './tft-strings';
 
 /**
  * MetaTFT public statistics (free, no API key, CORS enabled).
@@ -153,26 +154,28 @@ export interface MetaStatsPayload {
   overview: MetaOverview;
 }
 
-let metaCache: Promise<MetaStatsPayload> | null = null;
+let metaCache = new Map<string, Promise<MetaStatsPayload>>();
 
 /** Fetch MetaTFT stats and join them with Community Dragon names/icons. */
-export function fetchMetaStats(): Promise<MetaStatsPayload> {
-  if (!metaCache) {
-    metaCache = loadMetaStats().catch((error) => {
-      metaCache = null;
-      throw error;
-    });
-  }
-  return metaCache;
+export function fetchMetaStats(locale: GameLocale = 'en'): Promise<MetaStatsPayload> {
+  const key = normalizeGameLocale(locale);
+  const cached = metaCache.get(key);
+  if (cached) return cached;
+  const task = loadMetaStats(key).catch((error) => {
+    metaCache.delete(key);
+    throw error;
+  });
+  metaCache.set(key, task);
+  return task;
 }
 
-async function loadMetaStats(): Promise<MetaStatsPayload> {
+async function loadMetaStats(locale: GameLocale): Promise<MetaStatsPayload> {
   const [unitStats, compsData, compsStats, games, staticData] = await Promise.all([
     fetchJson<{ results?: UnitRow[]; games?: Array<{ count: number }>; updated?: number }>(UNITS_URL),
     fetchJson<CompsDataResponse>(COMPS_DATA_URL),
     fetchJson<{ results?: CompStatRow[] }>(COMPS_STATS_URL),
     fetchJson<GamesResponse>(GAMES_URL),
-    fetchStaticData(),
+    fetchStaticData(locale),
   ]);
 
   const patchId = patchLabel(games);

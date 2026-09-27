@@ -1,13 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useStaticData } from '@tft/api';
 import { Button, LoadingSkeleton, SearchInput } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
+import { setOrDelete, useSyncSearchParams } from '@/hooks/use-sync-search-params';
 
-export default function WikiItemsPage() {
-  const [search, setSearch] = useState('');
+function WikiItemsContent() {
+  const params = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
   const { data, isLoading, isError, error, refetch } = useStaticData();
+  const { dict } = useDictionary();
+  const showLoading = !useMounted() || isLoading;
+
+  const merged = useMemo(() => {
+    const next = new URLSearchParams(params.toString());
+    setOrDelete(next, 'q', search.trim() || null);
+    return next.toString();
+  }, [params, search]);
+  useSyncSearchParams(merged);
 
   const items = data?.items ?? [];
   const nameById = new Map(items.map((item) => [item.id, item.name]));
@@ -21,17 +35,17 @@ export default function WikiItemsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-[var(--foreground)]">Items</h2>
+        <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.itemsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? (
+          {showLoading ? (
             <span className="block h-4 w-64 animate-pulse rounded bg-[var(--foreground)]/10" />
           ) : (
-            `Browse all ${items.length} items in ${data?.set.name ?? 'the current set'}`
+            dict.wiki.itemsSubtitle(items.length, data?.set.name ?? dict.wiki.currentSet)
           )}
         </p>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 9 }, (_, i) => (
             <LoadingSkeleton key={i} variant="card" />
@@ -39,9 +53,9 @@ export default function WikiItemsPage() {
         </div>
       )}
 
-      {!isLoading && isError && (
+      {!showLoading && isError && (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
-          <p className="text-sm text-muted-foreground">Failed to load items.</p>
+          <p className="text-sm text-muted-foreground">{dict.wiki.itemsError}</p>
           {error && (
             <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
           )}
@@ -51,24 +65,24 @@ export default function WikiItemsPage() {
             className="mt-4"
             onClick={() => void refetch()}
           >
-            Retry
+            {dict.common.retry}
           </Button>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <>
           <SearchInput
-            placeholder="Search items..."
+            placeholder={dict.wiki.itemsSearch}
             value={search}
             onChange={setSearch}
-            aria-label="Search items"
+            aria-label={dict.wiki.itemsSearchLabel}
             className="max-w-md"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((item) => (
+            {filtered.map((item, index) => (
               <div
-                key={item.id}
+                key={`${item.id}-${index}`}
                 className="flex gap-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4"
               >
                 <ChampionAvatar
@@ -89,7 +103,7 @@ export default function WikiItemsPage() {
                     </p>
                   )}
                   <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-                    {item.description || 'No description available.'}
+                    {item.description || dict.wiki.noDescription}
                   </p>
                 </div>
               </div>
@@ -97,12 +111,28 @@ export default function WikiItemsPage() {
           </div>
           {filtered.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
-              No items match your search.
+              {dict.wiki.itemsEmpty}
             </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+export default function WikiItemsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 9 }, (_, i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+      }
+    >
+      <WikiItemsContent />
+    </Suspense>
   );
 }
 

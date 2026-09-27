@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import { BuilderHeader } from '@/components/builder/builder-header';
+
 export const metadata: Metadata = {
   title: 'Team Builder — TFT Dashboard',
   description:
@@ -13,18 +15,8 @@ export default function BuilderLayout({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-[var(--foreground)]">
-            Team Builder
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Plan your team composition and explore synergies.
-          </p>
-        </div>
-      </div>
+      <BuilderHeader />
       {children}
     </div>
   );
 }
-

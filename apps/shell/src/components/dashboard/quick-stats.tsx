@@ -1,21 +1,21 @@
 'use client';
 
 import { useMetaStats } from '@tft/api';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
 
 export function QuickStats() {
   const { comps, champions, overview, isLoading, isError, refetch } = useMetaStats();
+  const { dict, numberLocale } = useDictionary();
+  const showLoading = !useMounted() || isLoading;
 
-  if (isLoading) {
+  if (showLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="animate-pulse rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5"
-          >
-            <div className="h-4 w-24 rounded bg-[var(--background)]" />
-            <div className="mt-2 h-7 w-20 rounded bg-[var(--background)]" />
-            <div className="mt-2 h-3 w-28 rounded bg-[var(--background)]" />
+          <div key={index} className="animate-pulse">
+            <div className="h-4 w-24 rounded bg-[var(--foreground)]/10" />
+            <div className="mt-2 h-7 w-20 rounded bg-[var(--foreground)]/10" />
           </div>
         ))}
       </div>
@@ -26,14 +26,14 @@ export function QuickStats() {
     return (
       <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5">
         <p className="text-sm text-muted-foreground">
-          Could not load stats.
+          {dict.stats.loadError}
         </p>
         <button
           type="button"
           onClick={() => void refetch()}
-          className="rounded-lg bg-[var(--accent-gold)]/15 px-3 py-1.5 text-xs font-semibold text-[var(--accent-gold)] transition-colors hover:bg-[var(--accent-gold)]/25"
+          className="rounded-lg bg-[var(--accent-gold)]/15 px-3 py-1.5 text-xs font-semibold text-[var(--accent-gold)] transition-colors hover:bg-[var(--accent-gold)]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
         >
-          Retry
+          {dict.common.retry}
         </button>
       </div>
     );
@@ -44,55 +44,55 @@ export function QuickStats() {
 
   const stats = [
     {
-      label: 'Current Patch',
+      label: dict.stats.currentPatch,
       value: overview?.patchId ?? '—',
-      subtext: overview?.setName ?? 'Set data unavailable',
+      subtext: overview?.setName ?? dict.stats.setUnavailable,
       color: 'var(--accent-gold)',
     },
     {
-      label: 'Games Analysed',
-      value: overview ? overview.totalGames.toLocaleString('en-US') : '—',
-      subtext: overview ? `${overview.trackedComps} comps tracked` : 'No data',
+      label: dict.stats.gamesAnalysed,
+      value: overview ? overview.totalGames.toLocaleString(numberLocale) : '—',
+      subtext: overview ? dict.stats.compsTracked(overview.trackedComps) : dict.common.noData,
       color: 'var(--tier-b)',
     },
     {
-      label: 'Top Comp',
+      label: dict.stats.topComp,
       value: topComp?.name ?? '—',
-      subtext: topComp ? `${topComp.winRate.toFixed(1)}% win rate` : 'No data',
+      subtext: topComp ? dict.stats.winRate(topComp.winRate.toFixed(1)) : dict.common.noData,
       color: 'var(--accent-blue)',
     },
     {
-      label: 'Best Champion',
+      label: dict.stats.bestChampion,
       value: bestChampion?.name ?? '—',
       subtext: bestChampion
         ? `${bestChampion.cost}-cost | ${bestChampion.traits[0] ?? '—'}`
-        : 'No data',
+        : dict.common.noData,
       color: 'var(--cost-4)',
     },
   ];
 
+  // Stat band (no boxes): dividers separate the four figures.
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
+    <dl className="grid grid-cols-2 gap-y-6 lg:grid-cols-4">
+      {stats.map((stat, index) => (
         <div
           key={stat.label}
-          className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-5 transition-all hover:border-[var(--accent-gold)]/40"
+          className={index > 0 ? 'lg:border-l lg:border-[var(--border)] lg:pl-6' : ''}
         >
-          <p className="text-sm font-medium text-muted-foreground">
+          <dt className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             {stat.label}
-          </p>
-          <p
-            className="mt-1 text-2xl font-bold"
+          </dt>
+          <dd
+            className="mt-1 text-3xl font-black tracking-tight"
             style={{ color: stat.color }}
           >
             {stat.value}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          </dd>
+          <dd className="mt-1 text-xs text-muted-foreground">
             {stat.subtext}
-          </p>
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
-

@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { fetchMetaStats } from '@tft/api/server';
+import { normalizeGameLocale } from '@tft/api';
 
 // Stats are aggregated upstream a few times a day; refresh every 5 minutes.
 export const revalidate = 300;
 
 /**
- * GET /api/tft/meta
+ * GET /api/tft/meta?locale=vi
  * Champion and comp statistics (win rate, top 4, avg placement, pick rate).
+ * `locale=vi` localizes champion/comp/trait display names.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const data = await fetchMetaStats();
+    const locale = normalizeGameLocale(new URL(request.url).searchParams.get('locale'));
+    const data = await fetchMetaStats(locale);
     return NextResponse.json(data, {
       headers: {
         'Cache-Control': 'public, max-age=300, stale-while-revalidate=1800',

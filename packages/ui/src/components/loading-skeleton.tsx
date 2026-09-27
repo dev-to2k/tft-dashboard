@@ -15,7 +15,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
         <div
           ref={ref}
           className={cn(
-            'animate-pulse rounded-xl border border-white/10 bg-[var(--bg-secondary)] p-6',
+            'skeleton-sheen animate-pulse rounded-xl border border-white/10 bg-[var(--card-bg)] p-6',
             className,
           )}
           {...props}

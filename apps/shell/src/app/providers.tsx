@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 import { usePreferencesStore } from '@tft/store';
+import { resolveLocale } from '@/i18n/dictionaries';
 
 // Simple theme context
 type Theme = 'dark' | 'light';
@@ -36,7 +37,6 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
-
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
@@ -59,7 +59,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        <LocaleSync />
+        {children}
+      </ThemeProvider>
     </QueryClientProvider>
   );
+}
+
+/** Keep <html lang> in sync with the persisted locale preference. */
+function LocaleSync() {
+  const raw = usePreferencesStore((s) => s.locale);
+
+  useEffect(() => {
+    document.documentElement.lang = resolveLocale(raw);
+  }, [raw]);
+
+  return null;
 }

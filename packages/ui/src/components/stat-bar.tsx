@@ -32,7 +32,10 @@ export const StatBar = React.forwardRef<HTMLDivElement, StatBarProps>(
           style={{ height }}
         >
           <div
-            className={cn('h-full rounded-full transition-all duration-300', barColor)}
+            className={cn(
+              'h-full rounded-full bg-gradient-to-b from-white/25 to-transparent transition-all duration-300',
+              barColor,
+            )}
             style={{ width: `${percentage}%` }}
           />
         </div>

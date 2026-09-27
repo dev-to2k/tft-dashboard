@@ -1,6 +1,9 @@
 // Client
 export { tftFetch, type FetchOptions } from './client';
 
+// Game locales + official display-name strings
+export { normalizeGameLocale, fetchTftStrings, type GameLocale, type TftStrings } from './tft-strings';
+
 // Community Dragon (static game data — free, no API key)
 export {
   COMMUNITY_DRAGON_DATA_URL,

@@ -5,13 +5,13 @@ import { cn } from '../lib/utils';
 
 const buttonVariants = {
   primary:
-    'bg-[var(--accent-gold)] text-[var(--gold-foreground)] hover:bg-[var(--accent-gold)]/90 font-semibold',
+    'bg-gradient-to-b from-[var(--accent-gold)] to-[var(--gold-deep)] text-[var(--gold-foreground)] font-bold shadow-[0_2px_16px_-4px_var(--accent-gold)] hover:brightness-110 hover:shadow-[0_2px_20px_-2px_var(--accent-gold)]',
   secondary:
-    'bg-[var(--accent-blue)] text-[var(--gold-foreground)] hover:bg-[var(--accent-blue)]/90 font-semibold',
+    'bg-gradient-to-b from-[var(--accent-blue)] to-[#087a71] text-white font-semibold shadow-[0_2px_16px_-4px_var(--accent-blue)] hover:brightness-110',
   ghost:
     'bg-transparent text-[var(--foreground)] hover:bg-[var(--foreground)]/10',
   outline:
-    'border border-[var(--accent-gold)]/40 text-[var(--foreground)] hover:bg-[var(--accent-gold)]/10',
+    'border border-[var(--accent-gold)]/40 text-[var(--foreground)] hover:bg-[var(--accent-gold)]/10 hover:shadow-[0_0_14px_-4px_var(--accent-gold)]',
 };
 
 const buttonSizes = {
@@ -32,7 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
           buttonVariants[variant],
           buttonSizes[size],
           className,

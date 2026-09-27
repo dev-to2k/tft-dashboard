@@ -230,6 +230,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.0
         version: 5.103.2(react@19.3.0)
+      '@tft/store':
+        specifier: workspace:*
+        version: link:../store
       '@tft/types':
         specifier: workspace:*
         version: link:../types

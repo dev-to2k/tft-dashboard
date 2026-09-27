@@ -11,6 +11,15 @@ export {
 // Synergy
 export { calculateSynergies } from './synergy';
 
+// Formation
+export {
+  arrangeCompFormation,
+  toFormationUnits,
+  FORMATION_BOARD_SLOTS,
+  type FormationUnit,
+  type CompFormationInput,
+} from './formation';
+
 // Roll Odds
 export { calculateRollOdds } from './roll-odds';
 

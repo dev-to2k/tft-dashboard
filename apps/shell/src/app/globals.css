@@ -1,24 +1,28 @@
 @import "tailwindcss";
 
+/* Scan shared UI package classes (monorepo: packages/ lives outside apps/shell). */
+@source "../../../../packages/ui/src";
+
 :root {
   color-scheme: dark;
 
-  /* TFT Dark Theme (default) */
-  --background: #0a0e1a;
-  --foreground: #e2e8f0;
-  --muted-foreground: #94a3b8;
+  /* TFT Dark Theme (default) — zinc-based neutrals */
+  --background: #09090b; /* zinc-950 */
+  --foreground: #f4f4f5; /* zinc-100 */
+  --muted-foreground: #a1a1aa; /* zinc-400 */
 
   /* Accent Colors */
   --accent-gold: #c8aa6e;
   --accent-gold-text: #c8aa6e;
+  --gold-deep: #8a6d2f;
   --accent-blue: #0ac8b9;
   --accent-blue-text: #0ac8b9;
   /* Text on gold/blue brand surfaces (both themes) */
-  --gold-foreground: #111827;
+  --gold-foreground: #18181b; /* zinc-900 */
 
   /* Card & Surface */
-  --card-bg: #111827;
-  --border: #1e293b;
+  --card-bg: #18181b; /* zinc-900 */
+  --border: #27272a; /* zinc-800 */
 
   /* Focus ring + status */
   --ring: #c8aa6e;
@@ -51,6 +55,7 @@
 
   --accent-gold: #c8aa6e;
   --accent-gold-text: #7a5f1d;
+  --gold-deep: #8a6d2f;
   --accent-blue: #0ac8b9;
   --accent-blue-text: #0b6e66;
   /* Text on gold/blue brand surfaces (both themes) */
@@ -83,6 +88,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent-gold: var(--accent-gold);
   --color-accent-gold-text: var(--accent-gold-text);
+  --color-gold-deep: var(--gold-deep);
   --color-gold-foreground: var(--gold-foreground);
   --color-accent-blue: var(--accent-blue);
   --color-accent-blue-text: var(--accent-blue-text);
@@ -116,10 +122,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling for dark theme */
+/* Scrollbar styling — gaming gold */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -127,12 +133,34 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent-gold), var(--gold-deep));
+  border-radius: 8px;
+  border: 2px solid var(--background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-gold);
+}
+
+/* Skeleton sheen sweep */
+@keyframes sheen {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.skeleton-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
+  animation: sheen 1.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
 /* Gold shimmer animation for accents */
@@ -145,8 +173,50 @@ body {
   animation: gold-shimmer 2s ease-in-out infinite;
 }
 
+/* Directed motion: scroll reveals + slide transitions */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  animation: rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-enter {
+  animation: slide-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-gold-shimmer {
     animation: none;
   }
+  .skeleton-sheen::after {
+    animation: none;
+  }
+  .animate-pulse,
+  .animate-spin,
+  .animate-ping,
+  .animate-bounce,
+  .reveal,
+  .slide-enter {
+    animation: none;
+  }
+}
+
+/* Hex board cells (TFT in-game shape: pointy-top hexagon) */
+.hex-clip {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Consistent keyboard focus indicator across interactive elements */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }

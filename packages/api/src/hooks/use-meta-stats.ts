@@ -1,7 +1,9 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
+import { usePreferencesStore } from '@tft/store';
 import type { MetaStatsPayload } from '../metatft';
+import { normalizeGameLocale } from '../tft-strings';
 
 export const META_STATS_URL = '/api/tft/meta';
 
@@ -14,14 +16,18 @@ export interface UseMetaStatsParams {
 /**
  * Live champion/comp statistics (win rate, top 4, average placement, pick rate)
  * served by `apps/shell/src/app/api/tft/meta/route.ts`.
+ * Follows the app locale: switching language refetches localized names.
  */
 export function useMetaStats(params: UseMetaStatsParams = {}) {
   const { eloBracket = 'all', patchId = 'latest', enabled = true } = params;
+  const locale = normalizeGameLocale(usePreferencesStore((s) => s.locale));
 
   const query = useQuery<MetaStatsPayload, Error>({
-    queryKey: ['tft', 'meta', eloBracket, patchId],
+    queryKey: ['tft', 'meta', eloBracket, patchId, locale],
     queryFn: async () => {
-      const response = await fetch(META_STATS_URL, { headers: { Accept: 'application/json' } });
+      const response = await fetch(`${META_STATS_URL}?locale=${locale}`, {
+        headers: { Accept: 'application/json' },
+      });
       if (!response.ok) {
         throw new Error(`Failed to load meta stats: HTTP ${response.status}`);
       }

@@ -1,13 +1,15 @@
+export type NavLinkKey = 'dashboard' | 'meta' | 'wiki' | 'builder';
+
 export interface NavLink {
   href: string;
-  label: string;
+  key: NavLinkKey;
 }
 
 export const navLinks: NavLink[] = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/meta', label: 'Meta' },
-  { href: '/wiki', label: 'Wiki' },
-  { href: '/builder', label: 'Builder' },
+  { href: '/', key: 'dashboard' },
+  { href: '/meta', key: 'meta' },
+  { href: '/wiki', key: 'wiki' },
+  { href: '/builder', key: 'builder' },
 ];
 
 export function isActivePath(pathname: string, href: string): boolean {

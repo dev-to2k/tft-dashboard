@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { MetaFilterBar } from '@/components/meta-filter-bar';
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export default function MetaLayout({
 }) {
   return (
     <div className="space-y-6">
-      <MetaFilterBar />
+      <Suspense>
+        <MetaFilterBar />
+      </Suspense>
 
       {children}
     </div>

@@ -28,7 +28,7 @@ export const TierBadge = React.forwardRef<HTMLSpanElement, TierBadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-md border font-semibold',
+          'inline-flex items-center justify-center rounded-md border font-black shadow-[0_0_12px_-3px_currentColor]',
           tierStyles[tier] ?? tierStyles['C'],
           sizeClasses[size],
           className,

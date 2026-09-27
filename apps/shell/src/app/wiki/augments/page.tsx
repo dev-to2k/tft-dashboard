@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useStaticData } from '@tft/api';
 import { Button, LoadingSkeleton, SearchInput } from '@tft/ui';
 import { ChampionAvatar } from '@/components/champion-avatar';
+import { useDictionary } from '@/i18n/use-dictionary';
+import { useMounted } from '@/hooks/use-mounted';
+import { setOrDelete, useSyncSearchParams } from '@/hooks/use-sync-search-params';
 
 const tiers = ['Silver', 'Gold', 'Prismatic'] as const;
 type AugmentTier = (typeof tiers)[number];
@@ -14,10 +18,29 @@ const tierTextClass: Record<string, string> = {
   prismatic: 'text-[var(--accent-blue)]',
 };
 
-export default function WikiAugmentsPage() {
-  const [search, setSearch] = useState('');
-  const [tierFilter, setTierFilter] = useState<AugmentTier | null>(null);
+function WikiAugmentsContent() {
+  const params = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
+  const [tierFilter, setTierFilter] = useState<AugmentTier | null>(() => {
+    const tier = params.get('tier');
+    return tier === 'Silver' || tier === 'Gold' || tier === 'Prismatic' ? tier : null;
+  });
   const { data, isLoading, isError, error, refetch } = useStaticData();
+  const { dict } = useDictionary();
+  const showLoading = !useMounted() || isLoading;
+
+  const merged = useMemo(() => {
+    const next = new URLSearchParams(params.toString());
+    setOrDelete(next, 'q', search.trim() || null);
+    setOrDelete(next, 'tier', tierFilter);
+    return next.toString();
+  }, [params, search, tierFilter]);
+  useSyncSearchParams(merged);
+  const tierLabels: Record<AugmentTier, string> = {
+    Silver: dict.wiki.tiers.silver,
+    Gold: dict.wiki.tiers.gold,
+    Prismatic: dict.wiki.tiers.prismatic,
+  };
 
   const augments = data?.augments ?? [];
   const q = search.trim().toLowerCase();
@@ -34,17 +57,17 @@ export default function WikiAugmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-[var(--foreground)]">Augments</h2>
+        <h2 className="text-2xl font-black text-[var(--foreground)]">{dict.wiki.augmentsTitle}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? (
+          {showLoading ? (
             <span className="block h-4 w-64 animate-pulse rounded bg-[var(--foreground)]/10" />
           ) : (
-            `Browse all ${augments.length} augments in ${data?.set.name ?? 'the current set'}`
+            dict.wiki.augmentsSubtitle(augments.length, data?.set.name ?? dict.wiki.currentSet)
           )}
         </p>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 9 }, (_, i) => (
             <LoadingSkeleton key={i} variant="card" />
@@ -52,10 +75,10 @@ export default function WikiAugmentsPage() {
         </div>
       )}
 
-      {!isLoading && isError && (
+      {!showLoading && isError && (
         <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Failed to load augments.
+            {dict.wiki.augmentsError}
           </p>
           {error && (
             <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
@@ -66,32 +89,32 @@ export default function WikiAugmentsPage() {
             className="mt-4"
             onClick={() => void refetch()}
           >
-            Retry
+            {dict.common.retry}
           </Button>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <>
           <div className="flex flex-wrap gap-3">
             <SearchInput
-              placeholder="Search augments..."
+              placeholder={dict.wiki.augmentsSearch}
               value={search}
               onChange={setSearch}
-              aria-label="Search augments"
+              aria-label={dict.wiki.augmentsSearchLabel}
               className="min-w-[200px] flex-1"
             />
             <div className="flex gap-1.5">
               <button
                 onClick={() => setTierFilter(null)}
                 aria-pressed={tierFilter === null}
-                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                   tierFilter === null
                     ? 'bg-[var(--accent-gold)] text-[var(--gold-foreground)]'
                     : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
                 }`}
               >
-                All
+                {dict.common.all}
               </button>
               {tiers.map((tier) => (
                 <button
@@ -100,21 +123,21 @@ export default function WikiAugmentsPage() {
                     setTierFilter(tierFilter === tier ? null : tier)
                   }
                   aria-pressed={tierFilter === tier}
-                  className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
+                  className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                     tierFilter === tier
                       ? 'bg-[var(--accent-gold)] text-[var(--gold-foreground)]'
                       : 'border border-[var(--border)] bg-[var(--card-bg)] text-muted-foreground hover:text-[var(--foreground)]'
                   }`}
                 >
-                  {tier}
+                  {tierLabels[tier]}
                 </button>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((augment) => (
+            {filtered.map((augment, index) => (
               <div
-                key={augment.id}
+                key={`${augment.id}-${index}`}
                 className="flex gap-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4"
               >
                 <ChampionAvatar
@@ -133,7 +156,7 @@ export default function WikiAugmentsPage() {
                     {augment.tier}
                   </p>
                   <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
-                    {augment.description || 'No description available.'}
+                    {augment.description || dict.wiki.noDescription}
                   </p>
                 </div>
               </div>
@@ -141,12 +164,28 @@ export default function WikiAugmentsPage() {
           </div>
           {filtered.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
-              No augments match your filters.
+              {dict.wiki.augmentsEmpty}
             </div>
           )}
         </>
       )}
     </div>
+  );
+}
+
+export default function WikiAugmentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 9 }, (_, i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+      }
+    >
+      <WikiAugmentsContent />
+    </Suspense>
   );
 }
 
