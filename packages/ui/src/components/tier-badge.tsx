@@ -4,11 +4,11 @@ import * as React from 'react';
 import { cn } from '../lib/utils';
 
 const tierStyles: Record<string, string> = {
-  S: 'bg-gradient-to-r from-yellow-500 to-amber-400 text-black font-bold shadow-[0_0_10px_rgba(234,179,8,0.4)]',
-  A: 'bg-blue-500 text-white font-semibold shadow-[0_0_8px_rgba(59,130,246,0.3)]',
-  B: 'bg-green-500 text-white font-medium',
-  C: 'bg-gray-500 text-white',
-  D: 'bg-red-500 text-white',
+  S: 'border-tier-s/40 bg-tier-s/10 text-tier-s',
+  A: 'border-tier-a/40 bg-tier-a/10 text-tier-a',
+  B: 'border-tier-b/40 bg-tier-b/10 text-tier-b',
+  C: 'border-tier-c/40 bg-tier-c/10 text-tier-c',
+  D: 'border-tier-d/40 bg-tier-d/10 text-tier-d',
 };
 
 export interface TierBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -28,7 +28,7 @@ export const TierBadge = React.forwardRef<HTMLSpanElement, TierBadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-md',
+          'inline-flex items-center justify-center rounded-md border font-semibold',
           tierStyles[tier] ?? tierStyles['C'],
           sizeClasses[size],
           className,

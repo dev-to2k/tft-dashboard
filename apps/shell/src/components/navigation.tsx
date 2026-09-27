@@ -1,15 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MobileMenu } from './mobile-menu';
 import { ThemeToggle } from './theme-toggle';
-
-const navLinks = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/meta', label: 'Meta' },
-  { href: '/wiki', label: 'Wiki' },
-  { href: '/builder', label: 'Builder' },
-];
+import { navLinks, isActivePath } from './nav-links';
 
 export function Navigation() {
+  const pathname = usePathname();
   return (
     <>
       {/* Desktop Sidebar */}
@@ -24,15 +22,23 @@ export function Navigation() {
         </Link>
 
         <nav className="mt-10 flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = isActivePath(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? 'page' : undefined}
+                className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+                  active
+                    ? 'bg-[var(--accent-gold)]/10 text-[var(--accent-gold)]'
+                    : 'text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--accent-gold)]'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="mt-auto flex items-end gap-2 pt-8">

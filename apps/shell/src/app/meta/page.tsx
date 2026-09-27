@@ -1,56 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useMetaStats } from '@tft/api';
-import { LoadingSkeleton } from '@tft/ui';
-import type { ChampionMetaStats } from '@tft/types';
-
-const tierColors: Record<string, string> = {
-  S: 'var(--tier-s)',
-  A: 'var(--tier-a)',
-  B: 'var(--tier-b)',
-  C: 'var(--tier-c)',
-  D: 'var(--tier-d)',
-};
-
-const costColors: Record<number, string> = {
-  1: 'var(--cost-1)',
-  2: 'var(--cost-2)',
-  3: 'var(--cost-3)',
-  4: 'var(--cost-4)',
-  5: 'var(--cost-5)',
-};
-
-function ChampionIcon({
-  champ,
-  className,
-}: {
-  champ: ChampionMetaStats;
-  className: string;
-}) {
-  const [imgFailed, setImgFailed] = useState(false);
-  const showImage = champ.iconUrl !== '' && !imgFailed;
-
-  return (
-    <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden text-sm font-bold text-white ${className}`}
-      style={{ backgroundColor: costColors[champ.cost] ?? 'var(--accent-blue)' }}
-    >
-      {showImage ? (
-        <img
-          src={champ.iconUrl}
-          alt={champ.name}
-          className="h-full w-full object-cover"
-          loading="lazy"
-          onError={() => setImgFailed(true)}
-        />
-      ) : (
-        champ.name.slice(0, 2)
-      )}
-    </div>
-  );
-}
+import { Button, LoadingSkeleton, TierBadge, tierTextClass } from '@tft/ui';
+import { ChampionAvatar } from '@/components/champion-avatar';
 
 export default function MetaOverviewPage() {
   const { champions, overview, isLoading, isError, error, refetch } =
@@ -86,15 +39,17 @@ export default function MetaOverviewPage() {
               {error.message}
             </p>
           ) : null}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
+            className="mt-4"
             onClick={() => {
               void refetch();
             }}
-            className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-[var(--accent-gold)]/40 hover:text-[var(--accent-gold)]"
           >
             Retry
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -120,10 +75,7 @@ export default function MetaOverviewPage() {
                 key={tier}
                 className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 text-center"
               >
-                <span
-                  className="text-2xl font-black"
-                  style={{ color: tierColors[tier] }}
-                >
+                <span className={`text-2xl font-black ${tierTextClass[tier]}`}>
                   {tier}
                 </span>
                 <p className="mt-1 text-xs text-[var(--foreground)]/40">
@@ -166,21 +118,19 @@ export default function MetaOverviewPage() {
                   key={champ.championId}
                   className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4 transition-all hover:border-[var(--accent-gold)]/30"
                 >
-                  <ChampionIcon champ={champ} className="h-12 w-12 rounded-lg" />
+                  <ChampionAvatar
+                    name={champ.name}
+                    iconUrl={champ.iconUrl}
+                    cost={champ.cost}
+                    size="md"
+                    className="rounded-lg"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[var(--foreground)]">
                         {champ.name}
                       </span>
-                      <span
-                        className="rounded px-1.5 py-0.5 text-[10px] font-black"
-                        style={{
-                          backgroundColor: `${tierColors[champ.tier]}20`,
-                          color: tierColors[champ.tier],
-                        }}
-                      >
-                        {champ.tier}
-                      </span>
+                      <TierBadge tier={champ.tier} size="sm" />
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {champ.traits.slice(0, 3).map((trait) => (

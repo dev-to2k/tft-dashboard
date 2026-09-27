@@ -12,6 +12,8 @@
   --accent-gold: #c8aa6e;
   --accent-gold-text: #c8aa6e;
   --accent-blue: #0ac8b9;
+  /* Text on gold/blue brand surfaces (both themes) */
+  --gold-foreground: #111827;
 
   /* Card & Surface */
   --card-bg: #111827;
@@ -49,6 +51,8 @@
   --accent-gold: #c8aa6e;
   --accent-gold-text: #7a5f1d;
   --accent-blue: #0ac8b9;
+  /* Text on gold/blue brand surfaces (both themes) */
+  --gold-foreground: #111827;
 
   --card-bg: #ffffff;
   --border: #e3dcc9;
@@ -77,6 +81,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent-gold: var(--accent-gold);
   --color-accent-gold-text: var(--accent-gold-text);
+  --color-gold-foreground: var(--gold-foreground);
   --color-accent-blue: var(--accent-blue);
   --color-card-bg: var(--card-bg);
   --color-border: var(--border);

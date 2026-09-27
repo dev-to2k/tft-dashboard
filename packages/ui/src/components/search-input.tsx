@@ -40,14 +40,14 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     return (
       <div className={cn('relative', className)}>
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           ref={ref}
           type="text"
           value={props.value ?? internalValue}
           onChange={handleChange}
           className={cn(
-            'flex h-10 w-full rounded-md border border-white/10 bg-[var(--bg-secondary)] pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-gold)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-gold)]',
+            'flex h-10 w-full rounded-md border border-[var(--border)] bg-[var(--card-bg)] pl-10 pr-4 text-sm text-[var(--foreground)] placeholder:text-muted-foreground focus:border-[var(--accent-gold)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-gold)]',
             className,
           )}
           {...props}

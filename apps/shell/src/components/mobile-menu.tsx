@@ -4,21 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navLinks = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/meta', label: 'Meta' },
-  { href: '/wiki', label: 'Wiki' },
-  { href: '/builder', label: 'Builder' },
-];
+import { navLinks, isActivePath } from './nav-links';
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) => isActivePath(pathname, href);
 
   return (
     <>
@@ -71,6 +63,7 @@ export function MobileMenu() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                   className={`rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                     isActive(link.href)
                       ? 'bg-[var(--accent-gold)]/10 text-[var(--accent-gold)]'

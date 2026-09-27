@@ -1,6 +1,20 @@
 // Utilities
 export { cn } from './lib/utils';
 
+// Theme tokens (tier / cost class maps)
+export {
+  TIERS,
+  tierVar,
+  tierTextClass,
+  tierBadgeClass,
+  costVar,
+  costTextClass,
+  costBgClass,
+  costBorderClass,
+  costRingClass,
+  type Tier,
+} from './theme/tokens';
+
 // Components
 export { Button, type ButtonProps } from './components/button';
 export {

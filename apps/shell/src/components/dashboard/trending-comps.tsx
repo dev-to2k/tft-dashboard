@@ -1,41 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useMetaStats, useStaticData } from '@tft/api';
-
-const tierColors: Record<string, string> = {
-  S: 'var(--tier-s)',
-  A: 'var(--tier-a)',
-  B: 'var(--tier-b)',
-  C: 'var(--tier-c)',
-  D: 'var(--tier-d)',
-};
+import { Button, TierBadge } from '@tft/ui';
+import { ChampionAvatar } from '../champion-avatar';
 
 const MAX_TRAIT_CHIPS = 4;
 const MAX_COMPS = 4;
-
-function ChampionAvatar({ name, iconUrl }: { name: string; iconUrl: string }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const showImage = iconUrl !== '' && !imageFailed;
-
-  return (
-    <div
-      className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-[var(--background)] text-[10px] font-medium text-[var(--foreground)]/70 ring-1 ring-[var(--border)]"
-      title={name}
-    >
-      {showImage ? (
-        <img
-          src={iconUrl}
-          alt={name}
-          className="h-8 w-8 object-cover"
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        name.slice(0, 2)
-      )}
-    </div>
-  );
-}
 
 export function TrendingComps() {
   const { comps, isLoading, isError, refetch } = useMetaStats();
@@ -86,13 +56,14 @@ export function TrendingComps() {
         <p className="text-sm text-[var(--foreground)]/60">
           Could not load trending comps.
         </p>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => void refetch()}
-          className="rounded-lg bg-[var(--accent-gold)]/15 px-3 py-1.5 text-xs font-semibold text-[var(--accent-gold)] transition-colors hover:bg-[var(--accent-gold)]/25"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -150,15 +121,7 @@ export function TrendingComps() {
                   )}
                 </div>
               </div>
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-black"
-                style={{
-                  backgroundColor: `${tierColors[comp.tier] ?? tierColors.B}20`,
-                  color: tierColors[comp.tier] ?? tierColors.B,
-                }}
-              >
-                {comp.tier}
-              </span>
+              <TierBadge tier={comp.tier} size="lg" />
             </div>
 
             <div className="mt-4 flex gap-5">
@@ -188,6 +151,8 @@ export function TrendingComps() {
                   key={champ}
                   name={champ}
                   iconUrl={iconByName.get(champ) ?? ''}
+                  size="sm"
+                  className="rounded-md"
                 />
               ))}
             </div>

@@ -41,13 +41,21 @@ export function DataTable<T>({
     <div className={cn('w-full overflow-auto', className)}>
       <table className="w-full caption-bottom text-sm">
         <thead>
-          <tr className="border-b border-white/10">
+          <tr className="border-b border-[var(--border)]">
             {columns.map((col) => (
               <th
                 key={col.key}
+                scope="col"
+                aria-sort={
+                  col.sortable && sortKey === col.key
+                    ? sortDirection === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : undefined
+                }
                 className={cn(
-                  'h-10 px-4 text-left align-middle font-medium text-[var(--text-secondary)]',
-                  col.sortable && 'cursor-pointer select-none hover:text-[var(--text-primary)]',
+                  'h-10 px-4 text-left align-middle font-medium text-muted-foreground',
+                  col.sortable && 'cursor-pointer select-none hover:text-[var(--foreground)]',
                   col.className,
                 )}
                 onClick={() => col.sortable && handleSort(col.key)}
@@ -69,7 +77,7 @@ export function DataTable<T>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="h-24 text-center text-[var(--text-secondary)]"
+                className="h-24 text-center text-muted-foreground"
               >
                 {emptyMessage}
               </td>
@@ -78,12 +86,12 @@ export function DataTable<T>({
             data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-white/5 transition-colors hover:bg-white/5"
+                className="border-b border-[var(--border)]/50 transition-colors hover:bg-[var(--foreground)]/5"
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={cn('p-4 align-middle text-[var(--text-primary)]', col.className)}
+                    className={cn('p-4 align-middle text-[var(--foreground)]', col.className)}
                   >
                     {col.render
                       ? col.render(row)

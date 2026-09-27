@@ -13,22 +13,22 @@ export interface StatBarProps extends React.HTMLAttributes<HTMLDivElement> {
 export const StatBar = React.forwardRef<HTMLDivElement, StatBarProps>(
   ({ className, value, label, showLabel = true, height = 8, ...props }, ref) => {
     const percentage = Math.min(Math.max(value * 100, 0), 100);
-    const barColor = value >= 0.5 ? 'bg-green-500' : 'bg-red-500';
+    const barColor = value >= 0.5 ? 'bg-success' : 'bg-danger';
 
     return (
       <div ref={ref} className={cn('w-full', className)} {...props}>
         {showLabel && (
           <div className="mb-1 flex justify-between text-xs">
             {label && (
-              <span className="text-[var(--text-secondary)]">{label}</span>
+              <span className="text-muted-foreground">{label}</span>
             )}
-            <span className="text-[var(--text-primary)]">
+            <span className="text-[var(--foreground)]">
               {percentage.toFixed(1)}%
             </span>
           </div>
         )}
         <div
-          className="w-full overflow-hidden rounded-full bg-white/10"
+          className="w-full overflow-hidden rounded-full bg-[var(--foreground)]/10"
           style={{ height }}
         >
           <div

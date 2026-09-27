@@ -1,49 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useMetaStats } from '@tft/api';
-import { LoadingSkeleton } from '@tft/ui';
-import type { ChampionMetaStats } from '@tft/types';
-
-const tierColors: Record<string, string> = {
-  S: 'var(--tier-s)',
-  A: 'var(--tier-a)',
-  B: 'var(--tier-b)',
-  C: 'var(--tier-c)',
-  D: 'var(--tier-d)',
-};
-
-const costColors: Record<number, string> = {
-  1: 'var(--cost-1)',
-  2: 'var(--cost-2)',
-  3: 'var(--cost-3)',
-  4: 'var(--cost-4)',
-  5: 'var(--cost-5)',
-};
-
-function ChampionIcon({ champ }: { champ: ChampionMetaStats }) {
-  const [imgFailed, setImgFailed] = useState(false);
-  const showImage = champ.iconUrl !== '' && !imgFailed;
-
-  return (
-    <div
-      className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-bold text-white"
-      style={{ backgroundColor: costColors[champ.cost] ?? 'var(--accent-blue)' }}
-    >
-      {showImage ? (
-        <img
-          src={champ.iconUrl}
-          alt={champ.name}
-          className="h-full w-full object-cover"
-          loading="lazy"
-          onError={() => setImgFailed(true)}
-        />
-      ) : (
-        champ.name.slice(0, 2)
-      )}
-    </div>
-  );
-}
+import { Button, LoadingSkeleton, TierBadge, costTextClass } from '@tft/ui';
+import { ChampionAvatar } from '@/components/champion-avatar';
 
 export default function ChampionsTierListPage() {
   const { champions, overview, isLoading, isError, error, refetch } =
@@ -71,15 +30,17 @@ export default function ChampionsTierListPage() {
               {error.message}
             </p>
           ) : null}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
+            className="mt-4"
             onClick={() => {
               void refetch();
             }}
-            className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-[var(--accent-gold)]/40 hover:text-[var(--accent-gold)]"
           >
             Retry
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -114,30 +75,25 @@ export default function ChampionsTierListPage() {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <ChampionIcon champ={champ} />
+                          <ChampionAvatar
+                            name={champ.name}
+                            iconUrl={champ.iconUrl}
+                            cost={champ.cost}
+                            size="sm"
+                            className="rounded-md"
+                          />
                           <span className="font-semibold text-[var(--foreground)]">
                             {champ.name}
                           </span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className="font-medium"
-                          style={{ color: costColors[champ.cost] }}
-                        >
+                        <span className={`font-medium ${costTextClass[champ.cost] ?? ''}`}>
                           {champ.cost}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className="inline-flex h-6 w-6 items-center justify-center rounded text-xs font-black"
-                          style={{
-                            backgroundColor: `${tierColors[champ.tier]}20`,
-                            color: tierColors[champ.tier],
-                          }}
-                        >
-                          {champ.tier}
-                        </span>
+                        <TierBadge tier={champ.tier} size="sm" />
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span

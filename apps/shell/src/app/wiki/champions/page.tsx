@@ -3,48 +3,8 @@
 import { useState } from 'react';
 
 import { useChampions, useStaticData } from '@tft/api';
-import type { TftChampion } from '@tft/types';
-import { LoadingSkeleton } from '@tft/ui';
-
-const costColors: Record<number, string> = {
-  1: 'var(--cost-1)',
-  2: 'var(--cost-2)',
-  3: 'var(--cost-3)',
-  4: 'var(--cost-4)',
-  5: 'var(--cost-5)',
-};
-
-function getInitials(name: string): string {
-  const parts = name.split(/[\s']+/).filter(Boolean);
-  if (parts.length >= 2 && parts[0] && parts[1]) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.slice(0, 2);
-}
-
-function ChampionAvatar({ champion }: { champion: TftChampion }) {
-  const [failed, setFailed] = useState(false);
-  const showImage = champion.iconUrl !== '' && !failed;
-
-  return (
-    <div
-      className="mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full text-lg font-bold text-white shadow-md"
-      style={{ backgroundColor: costColors[champion.cost] }}
-    >
-      {showImage ? (
-        <img
-          src={champion.iconUrl}
-          alt={champion.name}
-          loading="lazy"
-          className="h-full w-full object-cover"
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        getInitials(champion.name)
-      )}
-    </div>
-  );
-}
+import { Button, LoadingSkeleton, SearchInput, costBgClass, costBorderClass } from '@tft/ui';
+import { ChampionAvatar } from '@/components/champion-avatar';
 
 export default function WikiChampionsPage() {
   const [search, setSearch] = useState('');
@@ -90,12 +50,14 @@ export default function WikiChampionsPage() {
           {error && (
             <p className="mt-1 text-xs text-[var(--foreground)]/40">{error.message}</p>
           )}
-          <button
+          <Button
+            variant="primary"
+            size="sm"
+            className="mt-4"
             onClick={() => void refetch()}
-            className="mt-4 rounded-lg bg-[var(--accent-gold)] px-4 py-2 text-xs font-bold text-[var(--background)] transition-colors hover:opacity-90"
           >
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
@@ -103,16 +65,17 @@ export default function WikiChampionsPage() {
         <>
           {/* Filters */}
           <div className="flex flex-wrap gap-3">
-            <input
-              type="text"
+            <SearchInput
               placeholder="Search by name or trait..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="min-w-[200px] flex-1 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground)]/30 outline-none focus:border-[var(--accent-gold)] transition-colors"
+              onChange={setSearch}
+              aria-label="Search champions by name or trait"
+              className="min-w-[200px] flex-1"
             />
             <div className="flex gap-1.5">
               <button
                 onClick={() => setCostFilter(null)}
+                aria-pressed={costFilter === null}
                 className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                   costFilter === null
                     ? 'bg-[var(--accent-gold)] text-[var(--background)]'
@@ -125,16 +88,12 @@ export default function WikiChampionsPage() {
                 <button
                   key={cost}
                   onClick={() => setCostFilter(costFilter === cost ? null : cost)}
+                  aria-pressed={costFilter === cost}
                   className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
                     costFilter === cost
-                      ? 'text-white'
+                      ? `text-white ${costBgClass[cost] ?? ''}`
                       : 'border border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]/60 hover:text-[var(--foreground)]'
                   }`}
-                  style={
-                    costFilter === cost
-                      ? { backgroundColor: costColors[cost] }
-                      : undefined
-                  }
                 >
                   {cost}
                 </button>
@@ -147,13 +106,15 @@ export default function WikiChampionsPage() {
             {filtered.map((champ) => (
               <div
                 key={champ.id}
-                className="group relative overflow-hidden rounded-xl border bg-[var(--card-bg)] p-4 transition-all hover:shadow-lg"
-                style={{
-                  borderColor: costColors[champ.cost],
-                  borderWidth: '2px',
-                }}
+                className={`group relative overflow-hidden rounded-xl border-2 bg-[var(--card-bg)] p-4 transition-all hover:shadow-lg ${costBorderClass[champ.cost] ?? 'border-[var(--border)]'}`}
               >
-                <ChampionAvatar champion={champ} />
+                <ChampionAvatar
+                  name={champ.name}
+                  iconUrl={champ.iconUrl}
+                  cost={champ.cost}
+                  size="lg"
+                  className="mx-auto mb-3 rounded-full shadow-md"
+                />
                 <h3 className="text-center text-sm font-bold text-[var(--foreground)]">
                   {champ.name}
                 </h3>
@@ -166,15 +127,14 @@ export default function WikiChampionsPage() {
                   {champ.traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full bg-[var(--background)] px-1.5 py-0.5 text-[9px] text-[var(--accent-blue)]"
+                      className="rounded-full bg-[var(--background)] px-1.5 py-0.5 text-[10px] text-[var(--accent-blue)]"
                     >
                       {trait}
                     </span>
                   ))}
                 </div>
                 <div
-                  className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded text-[10px] font-black text-white"
-                  style={{ backgroundColor: costColors[champ.cost] }}
+                  className={`absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded text-[10px] font-black text-white ${costBgClass[champ.cost] ?? ''}`}
                 >
                   {champ.cost}
                 </div>
