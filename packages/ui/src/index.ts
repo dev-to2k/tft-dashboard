@@ -10,6 +10,7 @@ export {
   costVar,
   costTextClass,
   costBgClass,
+  costBgSoftClass,
   costBorderClass,
   costRingClass,
   type Tier,

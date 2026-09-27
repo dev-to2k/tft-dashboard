@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -13,6 +13,20 @@ export function MobileMenu() {
 
   const isActive = (href: string) => isActivePath(pathname, href);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
   return (
     <>
       {/* Hamburger Button */}
@@ -20,6 +34,7 @@ export function MobileMenu() {
         onClick={() => setOpen(!open)}
         className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
         aria-label="Toggle menu"
+        aria-expanded={open}
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,6 +64,7 @@ export function MobileMenu() {
               </span>
               <button
                 onClick={() => setOpen(false)}
+                aria-label="Close menu"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

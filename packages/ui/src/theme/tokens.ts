@@ -58,6 +58,14 @@ export const costBgClass: Record<number, string> = {
   5: 'bg-cost-5',
 };
 
+export const costBgSoftClass: Record<number, string> = {
+  1: 'bg-cost-1/15',
+  2: 'bg-cost-2/15',
+  3: 'bg-cost-3/15',
+  4: 'bg-cost-4/15',
+  5: 'bg-cost-5/15',
+};
+
 export const costBorderClass: Record<number, string> = {
   1: 'border-cost-1',
   2: 'border-cost-2',

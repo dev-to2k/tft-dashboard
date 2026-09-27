@@ -5,6 +5,7 @@ import type { TeamBuilderState } from '@tft/types';
 interface TeamBuilderActions {
   addChampion: (championId: string, slot?: number) => void;
   removeChampion: (slot: number) => void;
+  removeBenched: (slot: number) => void;
   setLevel: (level: number) => void;
   setGold: (gold: number) => void;
   reset: () => void;
@@ -58,6 +59,15 @@ export const useTeamBuilderStore = create<TeamBuilderState & TeamBuilderActions>
         if (slot >= 0 && slot < 8) {
           newBoard[slot] = null;
           set({ board: newBoard });
+        }
+      },
+
+      removeBenched: (slot: number) => {
+        const state = get();
+        const newBench = [...state.bench];
+        if (slot >= 0 && slot < newBench.length) {
+          newBench[slot] = null;
+          set({ bench: newBench });
         }
       },
 
