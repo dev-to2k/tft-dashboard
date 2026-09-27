@@ -1,17 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  /* TFT Dark Theme */
+  color-scheme: dark;
+
+  /* TFT Dark Theme (default) */
   --background: #0a0e1a;
   --foreground: #e2e8f0;
+  --muted-foreground: #94a3b8;
 
   /* Accent Colors */
   --accent-gold: #c8aa6e;
+  --accent-gold-text: #c8aa6e;
   --accent-blue: #0ac8b9;
 
   /* Card & Surface */
   --card-bg: #111827;
   --border: #1e293b;
+
+  /* Focus ring + status */
+  --ring: #c8aa6e;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 
   /* Champion Cost Colors */
   --cost-1: #9ca3af;
@@ -28,13 +38,52 @@
   --tier-d: #ef4444;
 }
 
+.light {
+  color-scheme: light;
+
+  /* TFT Light Theme — same brand, paper background */
+  --background: #f3efe6;
+  --foreground: #1b2436;
+  --muted-foreground: #5b6678;
+
+  --accent-gold: #c8aa6e;
+  --accent-gold-text: #7a5f1d;
+  --accent-blue: #0ac8b9;
+
+  --card-bg: #ffffff;
+  --border: #e3dcc9;
+
+  --ring: #7a5f1d;
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #dc2626;
+
+  --cost-1: #6b7280;
+  --cost-2: #15803d;
+  --cost-3: #1d4ed8;
+  --cost-4: #7e22ce;
+  --cost-5: #b45309;
+
+  --tier-s: #b45309;
+  --tier-a: #1d4ed8;
+  --tier-b: #15803d;
+  --tier-c: #6b7280;
+  --tier-d: #dc2626;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-text: var(--accent-gold-text);
   --color-accent-blue: var(--accent-blue);
   --color-card-bg: var(--card-bg);
   --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
   --color-cost-1: var(--cost-1);
   --color-cost-2: var(--cost-2);
   --color-cost-3: var(--cost-3);

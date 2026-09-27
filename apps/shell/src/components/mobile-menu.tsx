@@ -25,7 +25,7 @@ export function MobileMenu() {
       {/* Hamburger Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--foreground)]/70 transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
         aria-label="Toggle menu"
       >
         {open ? (
@@ -56,7 +56,7 @@ export function MobileMenu() {
               </span>
               <button
                 onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--foreground)]/60 hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -74,7 +74,7 @@ export function MobileMenu() {
                   className={`rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                     isActive(link.href)
                       ? 'bg-[var(--accent-gold)]/10 text-[var(--accent-gold)]'
-                      : 'text-[var(--foreground)]/70 hover:bg-[var(--background)] hover:text-[var(--foreground)]'
+                      : 'text-muted-foreground hover:bg-[var(--background)] hover:text-[var(--foreground)]'
                   }`}
                 >
                   {link.label}
@@ -84,7 +84,7 @@ export function MobileMenu() {
 
             <div className="mt-auto pt-8">
               <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-center">
-                <p className="text-xs text-[var(--foreground)]/40">Patch</p>
+                <p className="text-xs text-muted-foreground">Patch</p>
                 <p className="text-sm font-bold text-[var(--accent-gold)]">15.8</p>
               </div>
             </div>

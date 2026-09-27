@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { MobileMenu } from './mobile-menu';
+import { ThemeToggle } from './theme-toggle';
 
 const navLinks = [
   { href: '/', label: 'Dashboard' },
@@ -27,18 +28,19 @@ export function Navigation() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground)]/70 transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
+              className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-[var(--background)] hover:text-[var(--accent-gold)]"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto pt-8">
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-center">
-            <p className="text-xs text-[var(--foreground)]/40">Current Patch</p>
+        <div className="mt-auto flex items-end gap-2 pt-8">
+          <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-center">
+            <p className="text-xs text-muted-foreground">Current Patch</p>
             <p className="text-sm font-bold text-[var(--accent-gold)]">15.8</p>
           </div>
+          <ThemeToggle />
         </div>
       </aside>
 
@@ -52,7 +54,10 @@ export function Navigation() {
             TFT<span className="text-[var(--accent-gold)]">Dash</span>
           </span>
         </Link>
-        <MobileMenu />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <MobileMenu />
+        </div>
       </header>
     </>
   );
